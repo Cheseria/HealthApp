@@ -2,9 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class UserProfileScreen extends StatelessWidget {
+class DoctorProfileScreen extends StatelessWidget {
   final Map<String, dynamic> userData;
-  UserProfileScreen({required this.userData});
+  DoctorProfileScreen({required this.userData});
+
   final user = FirebaseAuth.instance.currentUser!;
 
   void signUserOut() {

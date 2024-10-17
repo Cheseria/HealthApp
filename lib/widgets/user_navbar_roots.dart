@@ -7,22 +7,24 @@ import 'package:healthapp/screens/user_profile_screen.dart';
 import 'package:healthapp/screens/user_schedule_screen.dart';
 
 class UserNavbarRoots extends StatefulWidget {
+  final Map<String, dynamic> userData;
+
+  UserNavbarRoots({required this.userData});
   @override
   State<UserNavbarRoots> createState() => _UserNavbarRootsState();
 }
 
 class _UserNavbarRootsState extends State<UserNavbarRoots> {
   int selectedIndex = 0;
-
-  final screens = [
-    UserHomeScreen(),
-    UserScheduleScreen(),
-    UserMessagesScreen(),
-    UserProfileScreen(),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final screens = [
+      UserHomeScreen(),
+      UserScheduleScreen(),
+      UserMessagesScreen(),
+      UserProfileScreen(userData: widget.userData),
+    ];
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: screens[selectedIndex],

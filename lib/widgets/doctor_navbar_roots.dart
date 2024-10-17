@@ -1,8 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:healthapp/screens/doctor_profile_screen.dart';
 
 class DoctorNavbarRoots extends StatefulWidget {
+  final Map<String, dynamic> userData;
+
+  DoctorNavbarRoots({required this.userData});
+
   @override
   State<DoctorNavbarRoots> createState() => _DoctorNavbarRootsState();
 }
@@ -10,14 +15,14 @@ class DoctorNavbarRoots extends StatefulWidget {
 class _DoctorNavbarRootsState extends State<DoctorNavbarRoots> {
   int selectedIndex = 0;
 
-  final screens = [
-    Container(),
-    Container(),
-    Container(),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final screens = [
+      Container(),
+      Container(),
+      DoctorProfileScreen(userData: widget.userData),
+    ];
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: screens[selectedIndex],

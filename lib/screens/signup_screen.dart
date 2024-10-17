@@ -31,18 +31,19 @@ class _SignupScreenState extends State<SignupScreen> {
 
       if (user != null) {
         String uid = user.uid;
+        DateTime dob = DateTime.parse(dobController.text);
+        Timestamp dobTimestamp = Timestamp.fromDate(dob);
 
         await FirebaseFirestore.instance.collection('users').doc(uid).set({
           'full_name': fullnamecontroller.text,
           'email': emailController.text,
           'phone_number': phoneNumberController.text,
-          'dob': dobController.text, // Store Date of Birth
+          'dob': dobTimestamp, // Store Date of Birth
           'role': selectedRole,
           'uid': uid,
         });
 
         await user.updateProfile(displayName: fullnamecontroller.text);
-
         await user.reload();
       }
       ;
