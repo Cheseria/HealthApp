@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:healthapp/screens/auth_screen.dart';
+import 'package:healthapp/widgets/role_dropdown.dart';
 import 'package:intl/intl.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -82,7 +83,7 @@ class _SignupScreenState extends State<SignupScreen> {
             child: Column(
           children: [
             SizedBox(
-              height: 150,
+              height: 110,
             ),
             Row(mainAxisAlignment: MainAxisAlignment.center, children: [
               Text(
@@ -106,37 +107,14 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
               ),
             ]),
-            SizedBox(height: 100),
+            SizedBox(height: 50),
             Padding(
               padding: EdgeInsets.symmetric(vertical: 8, horizontal: 15),
-              child: DropdownButtonFormField<String>(
-                value: selectedRole,
-                decoration: InputDecoration(
-                  labelText: "Select Role",
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person_outline),
-                ),
-                items: [
-                  DropdownMenuItem(
-                    value: 'doctor',
-                    child: Container(
-                      width: double
-                          .infinity, // Ensures it matches the field's width
-                      child: Text('Doctor'),
-                    ),
-                  ),
-                  DropdownMenuItem(
-                    value: 'patient',
-                    child: Container(
-                      width: double
-                          .infinity, // Ensures it matches the field's width
-                      child: Text('Patient'),
-                    ),
-                  ),
-                ],
-                onChanged: (value) {
+              child: RoleDropdown(
+                selectedRole: selectedRole,
+                onRoleChanged: (value) {
                   setState(() {
-                    selectedRole = value!;
+                    selectedRole = value; // Update the selected role
                   });
                 },
               ),

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:healthapp/widgets/upcoming_schedule.dart';
 
-class ScheduleScreen extends StatefulWidget {
+class UserScheduleScreen extends StatefulWidget {
   @override
-  State<ScheduleScreen> createState() => _ScheduleScreenState();
+  State<UserScheduleScreen> createState() => _UserScheduleScreenState();
 }
 
-class _ScheduleScreenState extends State<ScheduleScreen> {
+class _UserScheduleScreenState extends State<UserScheduleScreen> {
   int buttonIndex = 0;
 
   final scheduleWidgets = [

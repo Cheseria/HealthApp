@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-class MessagesScreen extends StatefulWidget {
+class UserMessagesScreen extends StatefulWidget {
   @override
-  State<MessagesScreen> createState() => _MessagesScreenState();
+  State<UserMessagesScreen> createState() => _UserMessagesScreenState();
 }
 
-class _MessagesScreenState extends State<MessagesScreen> {
+class _UserMessagesScreenState extends State<UserMessagesScreen> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(

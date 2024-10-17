@@ -1,24 +1,19 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
-import 'package:healthapp/screens/home_screen.dart';
-import 'package:healthapp/screens/messages_screen.dart';
-import 'package:healthapp/screens/profile_screen.dart';
-import 'package:healthapp/screens/schedule_screen.dart';
 
-class NavbarRoots extends StatefulWidget {
+class DoctorNavbarRoots extends StatefulWidget {
   @override
-  State<NavbarRoots> createState() => _NavbarRootsState();
+  State<DoctorNavbarRoots> createState() => _DoctorNavbarRootsState();
 }
 
-class _NavbarRootsState extends State<NavbarRoots> {
+class _DoctorNavbarRootsState extends State<DoctorNavbarRoots> {
   int selectedIndex = 0;
 
   final screens = [
-    HomeScreen(),
-    ScheduleScreen(),
-    MessagesScreen(),
-    ProfileScreen(),
+    Container(),
+    Container(),
+    Container(),
   ];
 
   @override
@@ -56,10 +51,6 @@ class _NavbarRootsState extends State<NavbarRoots> {
                 });
               },
               tabs: const [
-                GButton(
-                  icon: Icons.home_filled,
-                  text: "Home",
-                ),
                 GButton(
                   icon: Icons.calendar_month,
                   text: "Schedule",

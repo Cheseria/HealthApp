@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class ProfileScreen extends StatelessWidget {
+class UserProfileScreen extends StatelessWidget {
   final user = FirebaseAuth.instance.currentUser!;
 
   void signUserOut() {
