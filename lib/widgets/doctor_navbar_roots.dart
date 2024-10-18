@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
-import 'package:healthapp/screens/doctor_profile_screen.dart';
+import 'package:healthapp/screens/doctor/doctor_profile_screen.dart';
 
 class DoctorNavbarRoots extends StatefulWidget {
   final Map<String, dynamic> userData;

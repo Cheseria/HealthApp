@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
-import 'package:healthapp/screens/user_home_screen.dart';
-import 'package:healthapp/screens/user_messages_screen.dart';
-import 'package:healthapp/screens/user_profile_screen.dart';
-import 'package:healthapp/screens/user_schedule_screen.dart';
+import 'package:healthapp/screens/user/user_home_screen.dart';
+import 'package:healthapp/screens//user/user_messages_screen.dart';
+import 'package:healthapp/screens/user/user_profile_screen.dart';
+import 'package:healthapp/screens/user/user_schedule_screen.dart';
 
 class UserNavbarRoots extends StatefulWidget {
   final Map<String, dynamic> userData;

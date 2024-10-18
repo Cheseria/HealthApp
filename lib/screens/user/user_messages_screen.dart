@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:healthapp/screens/chat_screen.dart';
+import 'package:healthapp/services/chat_services.dart';
 
 class UserMessagesScreen extends StatefulWidget {
   @override
@@ -6,6 +8,8 @@ class UserMessagesScreen extends StatefulWidget {
 }
 
 class _UserMessagesScreenState extends State<UserMessagesScreen> {
+  final ChatServices _chatServices = ChatServices();
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -63,62 +67,60 @@ class _UserMessagesScreenState extends State<UserMessagesScreen> {
             ),
           ),
           SizedBox(height: 20),
-          SizedBox(
-            height: 90,
-            child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: 6,
+
+          // Firestore integration with StreamBuilder
+          StreamBuilder<List<Map<String, dynamic>>>(
+            stream: _chatServices.getUsersStream(),
+            builder: (context, snapshot) {
+              // Handle errors
+              if (snapshot.hasError) {
+                return Center(
+                    child: Text("Error loading users: ${snapshot.error}"));
+              }
+
+              // Handle loading state
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              }
+
+              // Check for data
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(child: Text("No users found"));
+              }
+
+              // Dynamically build the ListView based on Firestore data
+              return ListView.builder(
+                physics: NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
+                itemCount: snapshot.data!.length,
                 itemBuilder: (context, index) {
-                  return Container(
-                    margin: EdgeInsets.symmetric(horizontal: 10),
-                    width: 65,
-                    height: 65,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12,
-                          spreadRadius: 2,
-                          blurRadius: 10,
-                        ),
-                      ],
-                    ),
-                    child: Stack(
-                      textDirection: TextDirection.rtl,
-                      children: [
-                        Center(
-                          child: Container(
-                            height: 65,
-                            width: 65,
-                            child: ClipRRect(
-                                borderRadius: BorderRadius.circular(30),
-                                child: Icon(Icons.contacts_outlined)),
+                  final userData = snapshot.data![index];
+
+                  return ListTile(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChatScreen(
+                            receiverName: userData["full_name"],
+                            receiverID: userData["uid"],
                           ),
                         ),
-                      ],
+                      );
+                    },
+                    leading: Icon(Icons.contacts_outlined),
+                    title: Text(
+                      userData["full_name"] ?? "Unknown",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   );
-                }),
+                },
+              );
+            },
           ),
-          ListView.builder(
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: 6,
-              shrinkWrap: true,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  onTap: () {},
-                  leading: Icon(Icons.contacts_outlined),
-                  title: Text(
-                    "Dr. Doctor Name",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                );
-              })
         ],
       ),
     );
