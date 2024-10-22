@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -232,10 +233,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               InkWell(
                 onTap: () {},
                 child: Container(
-                  padding: EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
+                  width: MediaQuery.of(context).size.width * 0.4, // Adjust width
+                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(10),
                     border: Border.all(color: Color(0xFFC3D3CC), width: 1),
                     boxShadow: [
                       BoxShadow(
@@ -245,42 +244,51 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                       ),
                     ],
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              CupertinoIcons.moon_fill,
-                              color: Colors.yellow,
-                              size: 35,
-                            ),
+                  child: Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: CustomPaint(
+                        painter: StarryNightPainter(), // Starry night background
+                        child: Container(
+                          padding: EdgeInsets.all(10),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.all(8),
+                                    child: Icon(
+                                      CupertinoIcons.moon_fill,
+                                      color: Colors.yellow,
+                                      size: 35,
+                                    ),
+                                  ),
+                                  SizedBox(height: 30),
+                                  Text(
+                                    "Sleep",
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      color: Colors.white, // Make text color white
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 5),
+                              Text(
+                                "Make an appointment",
+                                style: TextStyle(
+                                  color: Colors.white, // White text for visibility
+                                ),
+                              ),
+                              SizedBox(height: 30),
+                            ],
                           ),
-                          SizedBox(height: 30),
-                          Text(
-                            "Sleep",
-                            style: TextStyle(
-                              fontSize: 20,
-                              color: Color(0xFF238878),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 5),
-                      Text(
-                        "Make an appointment",
-                        style: TextStyle(
-                          color: Colors.black,
                         ),
                       ),
-                      SizedBox(height: 30),
+                      ),
                     ],
                   ),
                 ),
@@ -402,5 +410,42 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         ],
       ),
     );
+  }
+}
+
+
+class StarryNightPainter extends CustomPainter {
+  final Random random = Random();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Background gradient for night sky
+    Paint backgroundPaint = Paint()
+      ..shader = LinearGradient(
+        colors: [Colors.deepPurple[900]!, Colors.black],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+
+    // Draw the background
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), backgroundPaint);
+
+    // Draw random stars
+    Paint starPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+
+    int numberOfStars = 100; // You can adjust the number of stars
+    for (int i = 0; i < numberOfStars; i++) {
+      double starX = random.nextDouble() * size.width;
+      double starY = random.nextDouble() * size.height;
+      double starRadius = random.nextDouble() * 2; // Random star size
+      canvas.drawCircle(Offset(starX, starY), starRadius, starPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
   }
 }
