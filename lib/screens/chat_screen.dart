@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:healthapp/services/chat_services.dart';
 import 'package:healthapp/widgets/chat_bubble.dart';
 import 'package:healthapp/widgets/my_textfield.dart';
+import 'package:intl/intl.dart';
 
 class ChatScreen extends StatefulWidget {
   final String receiverName;
@@ -124,13 +125,68 @@ class _ChatScreenState extends State<ChatScreen> {
           return const Text("Loading..");
         }
 
-        //return list view
-        return ListView(
+        // Retrieve message documents
+        List<DocumentSnapshot> messages = snapshot.data!.docs;
+
+        // Initialize variables to track the previous message's date
+        DateTime? previousMessageDate;
+
+        // Build the message list with date headers
+        return ListView.builder(
           controller: _scrollController,
-          children:
-              snapshot.data!.docs.map((doc) => _buildMessageItem(doc)).toList(),
+          itemCount: messages.length,
+          itemBuilder: (context, index) {
+            // Get the message data and timestamp
+            DocumentSnapshot doc = messages[index];
+            Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+            Timestamp timestamp = data['timestamp'] as Timestamp;
+            DateTime messageDate = timestamp.toDate();
+
+            // Format the date
+            String formattedDate = DateFormat('yMMMMd').format(messageDate);
+
+            // Check if the date has changed since the previous message
+            bool isNewDay = previousMessageDate == null ||
+                !isSameDay(messageDate, previousMessageDate!);
+
+            // Update the previous message date
+            previousMessageDate = messageDate;
+
+            // If it's a new day, show the date header above the message
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (isNewDay) _buildDateHeader(formattedDate), // Date header
+                _buildMessageItem(doc), // Message bubble
+              ],
+            );
+          },
         );
       },
+    );
+  }
+
+  // Helper function to check if two DateTime objects are on the same day
+  bool isSameDay(DateTime date1, DateTime date2) {
+    return date1.year == date2.year &&
+        date1.month == date2.month &&
+        date1.day == date2.day;
+  }
+
+// Build the date header widget
+  Widget _buildDateHeader(String formattedDate) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Center(
+        child: Text(
+          formattedDate,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey[700],
+          ),
+        ),
+      ),
     );
   }
 
@@ -144,6 +200,11 @@ class _ChatScreenState extends State<ChatScreen> {
     var alignment =
         isCurrentUser ? Alignment.centerRight : Alignment.centerLeft;
 
+    // Extract and format the timestamp
+    Timestamp timestamp = data['timestamp'] as Timestamp;
+    DateTime dateTime = timestamp.toDate();
+    String formattedTime = DateFormat('h:mm a').format(dateTime);
+
     return Container(
       alignment: alignment,
       child: Column(
@@ -151,6 +212,14 @@ class _ChatScreenState extends State<ChatScreen> {
             isCurrentUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
           ChatBubble(message: data["message"], isCurrentUser: isCurrentUser),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 30),
+            child: Text(
+              formattedTime,
+              style: TextStyle(
+                  fontSize: 12, color: Colors.grey), // Style the timestamp
+            ),
+          ),
         ],
       ),
     );
