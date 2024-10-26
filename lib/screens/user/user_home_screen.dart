@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:healthapp/screens/settings_screen.dart';
+import 'package:healthapp/screens/user/user_sleep_screen.dart';
 
 class UserHomeScreen extends StatefulWidget {
   @override
@@ -231,10 +232,18 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               InkWell(
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => UserSleepScreen(),
+                      ));
+                },
                 child: Container(
-                  width: MediaQuery.of(context).size.width * 0.4, // Adjust width
-                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(10),
+                  width:
+                      MediaQuery.of(context).size.width * 0.4, // Adjust width
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
                     border: Border.all(color: Color(0xFFC3D3CC), width: 1),
                     boxShadow: [
                       BoxShadow(
@@ -245,49 +254,52 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                     ],
                   ),
                   child: Stack(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: CustomPaint(
-                        painter: StarryNightPainter(), // Starry night background
-                        child: Container(
-                          padding: EdgeInsets.all(10),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: EdgeInsets.all(8),
-                                    child: Icon(
-                                      CupertinoIcons.moon_fill,
-                                      color: Colors.yellow,
-                                      size: 35,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: CustomPaint(
+                          painter:
+                              StarryNightPainter(), // Starry night background
+                          child: Container(
+                            padding: EdgeInsets.all(10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.all(8),
+                                      child: Icon(
+                                        CupertinoIcons.moon_fill,
+                                        color: Colors.yellow,
+                                        size: 35,
+                                      ),
                                     ),
-                                  ),
-                                  SizedBox(height: 30),
-                                  Text(
-                                    "Sleep",
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      color: Colors.white, // Make text color white
-                                      fontWeight: FontWeight.bold,
+                                    SizedBox(height: 30),
+                                    Text(
+                                      "Sleep",
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        color: Colors
+                                            .white, // Make text color white
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: 5),
-                              Text(
-                                "Make an appointment",
-                                style: TextStyle(
-                                  color: Colors.white, // White text for visibility
+                                  ],
                                 ),
-                              ),
-                              SizedBox(height: 30),
-                            ],
+                                SizedBox(height: 5),
+                                Text(
+                                  "Make an appointment",
+                                  style: TextStyle(
+                                    color: Colors
+                                        .white, // White text for visibility
+                                  ),
+                                ),
+                                SizedBox(height: 30),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
                       ),
                     ],
                   ),
@@ -413,7 +425,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   }
 }
 
-
 class StarryNightPainter extends CustomPainter {
   final Random random = Random();
 
@@ -428,7 +439,8 @@ class StarryNightPainter extends CustomPainter {
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
 
     // Draw the background
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), backgroundPaint);
+    canvas.drawRect(
+        Rect.fromLTWH(0, 0, size.width, size.height), backgroundPaint);
 
     // Draw random stars
     Paint starPaint = Paint()

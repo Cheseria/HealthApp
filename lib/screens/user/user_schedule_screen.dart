@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:healthapp/screens/user/user_booking_screen.dart';
 import 'package:healthapp/widgets/upcoming_schedule.dart';
 
 class UserScheduleScreen extends StatefulWidget {
@@ -28,31 +29,53 @@ class _UserScheduleScreenState extends State<UserScheduleScreen> {
         children: [
           Padding(
             padding: EdgeInsets.only(top: 50, left: 20),
-            child:
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(
-                'Your',
-                textAlign: TextAlign.left,
-                style: TextStyle(
-                  color: Color(0xFF5ECD81),
-                  fontSize: 17,
-                  fontFamily: 'Raleway',
-                  fontWeight: FontWeight.w400,
-                  height: 0,
-                ),
-              ),
-              Text(
-                "Schedule",
-                textAlign: TextAlign.left,
-                style: TextStyle(
-                  color: Color(0xFF238878),
-                  fontSize: 40,
-                  fontFamily: 'Kameron',
-                  fontWeight: FontWeight.bold,
-                  height: 0,
-                ),
-              ),
-            ]),
+                  Text(
+                    'Your',
+                    textAlign: TextAlign.left,
+                    style: TextStyle(
+                      color: Color(0xFF5ECD81),
+                      fontSize: 17,
+                      fontFamily: 'Raleway',
+                      fontWeight: FontWeight.w400,
+                      height: 0,
+                    ),
+                  ),
+                  Text(
+                    "Schedule",
+                    textAlign: TextAlign.left,
+                    style: TextStyle(
+                      color: Color(0xFF238878),
+                      fontSize: 40,
+                      fontFamily: 'Kameron',
+                      fontWeight: FontWeight.bold,
+                      height: 0,
+                    ),
+                  ),
+                ]),
+                Container(
+                  padding: EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => UserBookingScreen(),
+                          ));
+                    },
+                    icon: Icon(Icons.add),
+                    color: Color(0xFF238878),
+                    iconSize: 40,
+                  ),
+                )
+              ],
+            ),
           ),
           SizedBox(height: 10),
           Container(
