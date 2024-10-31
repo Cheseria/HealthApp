@@ -3,7 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:healthapp/screens/settings_screen.dart';
+import 'package:healthapp/screens/user/user_heart_rate_screen.dart';
 import 'package:healthapp/screens/user/user_sleep_screen.dart';
+import 'package:healthapp/screens/user/user_steps_screen.dart';
 
 class UserHomeScreen extends StatefulWidget {
   @override
@@ -106,7 +108,13 @@ class _UserHomeScreenState extends State<UserHomeScreen>
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
               child: InkWell(
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => UserStepsScreen(),
+                      ));
+                },
                 child: Container(
                   height: 120,
                   width: MediaQuery.of(context).size.width * 0.9,
@@ -152,7 +160,13 @@ class _UserHomeScreenState extends State<UserHomeScreen>
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               InkWell(
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => UserHeartRateScreen(),
+                      ));
+                },
                 child: Container(
                   padding: EdgeInsets.all(10),
                   decoration: BoxDecoration(
