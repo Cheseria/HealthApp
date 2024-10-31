@@ -10,7 +10,45 @@ class UserHomeScreen extends StatefulWidget {
   State<UserHomeScreen> createState() => _UserHomeScreenState();
 }
 
-class _UserHomeScreenState extends State<UserHomeScreen> {
+class _UserHomeScreenState extends State<UserHomeScreen>
+    with TickerProviderStateMixin {
+  late AnimationController waveController;
+  late Animation<double> waveAnimation;
+  ValueNotifier<double> waterLevel = ValueNotifier(0.5); // Starts at 50%
+
+  late AnimationController starController; // Animation controller for stars
+  late List<Star> stars; // List to hold star positions
+  final int numberOfStars = 30; // Number of stars to display
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize wave animation
+    waveController =
+        AnimationController(vsync: this, duration: Duration(seconds: 2));
+    waveAnimation = Tween<double>(begin: 0.0, end: 2 * 3.1416)
+        .animate(CurvedAnimation(parent: waveController, curve: Curves.linear))
+      ..addListener(() {
+        setState(() {});
+      });
+
+    waveController.repeat(); // Continuously animates the wave
+
+    // Initialize star animation
+    starController =
+        AnimationController(vsync: this, duration: Duration(seconds: 10))
+          ..repeat(); // Loop the star movement
+
+    // Generate random stars initially
+    stars = List.generate(numberOfStars, (index) {
+      double x = Random().nextDouble() * 400; // Width of the canvas
+      double y = Random().nextDouble() * 400; // Height of the canvas
+      double radius = Random().nextDouble() * 2; // Smaller radius (0.0 to 1.0)
+      return Star(x: x, y: y, radius: radius);
+    });
+  }
+
   final user = FirebaseAuth.instance.currentUser!;
 
   @override
@@ -172,10 +210,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               InkWell(
                 onTap: () {},
                 child: Container(
-                  padding: EdgeInsets.all(10),
+                  width:
+                      MediaQuery.of(context).size.width * 0.4, // Adjust width
                   decoration: BoxDecoration(
-                    color: Colors.white,
                     borderRadius: BorderRadius.circular(10),
+                    color: Colors.white,
                     border: Border.all(color: Color(0xFFC3D3CC), width: 1),
                     boxShadow: [
                       BoxShadow(
@@ -185,42 +224,54 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                       ),
                     ],
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Stack(
                     children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.water_drop,
-                              color: Colors.blue,
-                              size: 35,
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: CustomPaint(
+                          painter: WavePainter(
+                              waveAnimation.value, waterLevel.value),
+                          child: Container(
+                            padding: EdgeInsets.all(10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.all(8),
+                                      child: Icon(
+                                        CupertinoIcons.drop,
+                                        color: Colors.blue,
+                                        size: 35,
+                                      ),
+                                    ),
+                                    SizedBox(height: 30),
+                                    Text(
+                                      "Water",
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        color: Colors
+                                            .white, // Make text color white
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 5),
+                                Text(
+                                  "Make an appointment",
+                                  style: TextStyle(
+                                    color: Colors
+                                        .white, // White text for visibility
+                                  ),
+                                ),
+                                SizedBox(height: 30),
+                              ],
                             ),
                           ),
-                          SizedBox(height: 30),
-                          Text(
-                            "Water",
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Color(0xFF238878),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 5),
-                      Text(
-                        "Make an appointment",
-                        style: TextStyle(
-                          color: Colors.black,
                         ),
                       ),
-                      SizedBox(height: 30),
                     ],
                   ),
                 ),
@@ -258,8 +309,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                       ClipRRect(
                         borderRadius: BorderRadius.circular(10),
                         child: CustomPaint(
-                          painter:
-                              StarryNightPainter(), // Starry night background
+                          painter: StarryNightPainter(starController.value,
+                              stars), // Starry night background
                           child: Container(
                             padding: EdgeInsets.all(10),
                             child: Column(
@@ -423,10 +474,26 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       ),
     );
   }
+
+  @override
+  void dispose() {
+    waveController.dispose();
+    starController.dispose(); // Dispose of star controller
+    super.dispose();
+  }
+}
+
+// Star class to represent each star's position and size
+class Star {
+  double x, y, radius;
+  Star({required this.x, required this.y, required this.radius});
 }
 
 class StarryNightPainter extends CustomPainter {
-  final Random random = Random();
+  final double animationValue;
+  final List<Star> stars;
+
+  StarryNightPainter(this.animationValue, this.stars);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -442,22 +509,56 @@ class StarryNightPainter extends CustomPainter {
     canvas.drawRect(
         Rect.fromLTWH(0, 0, size.width, size.height), backgroundPaint);
 
-    // Draw random stars
-    Paint starPaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.fill;
+    final starPaint = Paint()..color = Colors.white;
 
-    int numberOfStars = 100; // You can adjust the number of stars
-    for (int i = 0; i < numberOfStars; i++) {
-      double starX = random.nextDouble() * size.width;
-      double starY = random.nextDouble() * size.height;
-      double starRadius = random.nextDouble() * 2; // Random star size
-      canvas.drawCircle(Offset(starX, starY), starRadius, starPaint);
+    for (var star in stars) {
+      // Update star positions smoothly across the screen
+      star.x -= 0.5; // Move stars leftwards
+      if (star.x < -star.radius) {
+        star.x = size.width + star.radius; // Reset when out of view
+        star.y =
+            Random().nextDouble() * size.height; // Reset at a random height
+      }
+
+      // Draw stars on the canvas
+      canvas.drawCircle(Offset(star.x, star.y), star.radius, starPaint);
     }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+// Custom painter for the wave animation
+class WavePainter extends CustomPainter {
+  final double wavePhase;
+  final double waterLevel;
+
+  WavePainter(this.wavePhase, this.waterLevel);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = Colors.blue;
+    final path = Path();
+
+    final waveHeight = 10.0; // Wave amplitude
+    final waveLength = size.width / 2; // Wave length
+
+    path.moveTo(0, size.height * waterLevel);
+
+    for (double x = 0; x <= size.width; x++) {
+      final y = size.height * waterLevel +
+          sin((x / waveLength * 2 * pi) + wavePhase) * waveHeight;
+      path.lineTo(x, y);
+    }
+
+    path.lineTo(size.width, size.height);
+    path.lineTo(0, size.height);
+    path.close();
+
+    canvas.drawPath(path, paint);
   }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
