@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sensors_plus/sensors_plus.dart';
-import 'dart:math';
+import 'package:pedometer/pedometer.dart';
 
 class UserStepsScreen extends StatefulWidget {
   @override
@@ -13,20 +12,17 @@ class _UserStepsScreenState extends State<UserStepsScreen> {
   @override
   void initState() {
     super.initState();
-    accelerometerEvents.listen((AccelerometerEvent event) {
-      if (_isStepDetected(event)) {
-        setState(() {
-          stepCount++;
-        });
-      }
-    });
+    _initializePedometer();
   }
 
-  bool _isStepDetected(AccelerometerEvent event) {
-    final double threshold = 15.0; // Adjust the threshold as necessary
-    final double totalAcceleration =
-        sqrt(event.x * event.x + event.y * event.y + event.z * event.z);
-    return totalAcceleration > threshold;
+  void _initializePedometer() {
+    Pedometer.stepCountStream.listen((StepCount event) {
+      setState(() {
+        stepCount = event.steps;
+      });
+    }).onError((error) {
+      print("Pedometer Error: $error");
+    });
   }
 
   @override

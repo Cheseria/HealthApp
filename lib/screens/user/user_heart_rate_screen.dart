@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:heart_bpm/chart.dart';
 import 'package:heart_bpm/heart_bpm.dart';
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class UserHeartRateScreen extends StatefulWidget {
   @override
@@ -16,6 +18,30 @@ class _UserHeartRateScreenState extends State<UserHeartRateScreen> {
   Timer? _measurementTimer;
   int bpm = 0; // Holds the final BPM result
   int countdown = 60; // Countdown display in seconds
+
+  int dailyAverage = 72; // Placeholder for daily average BPM
+  int weeklyAverage = 75; // Placeholder for weekly average BPM
+  int buttonIndex = 0; // Index for daily/weekly switcher
+
+  String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+
+  void storeHeartRateData(String userId, int bpm, DateTime timestamp) {
+    DocumentReference docRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('heartRateData')
+        .doc(timestamp
+            .toIso8601String()); // Unique document ID based on timestamp
+
+    docRef.set({
+      'bpm': bpm,
+      'timestamp': timestamp.toIso8601String(),
+    }).then((_) {
+      print("Heart rate data saved successfully");
+    }).catchError((error) {
+      print("Failed to save heart rate data: $error");
+    });
+  }
 
   void _startMeasurement() {
     setState(() {
@@ -39,14 +65,13 @@ class _UserHeartRateScreenState extends State<UserHeartRateScreen> {
   void _stopMeasurement() {
     setState(() {
       isBPMEnabled = false;
-      // Calculate the average BPM from bpmValues after stopping
       if (bpmValues.isNotEmpty) {
         bpm = bpmValues.map((v) => v.value).reduce((a, b) => a + b) ~/
             bpmValues.length;
+        storeHeartRateData(userId, bpm, DateTime.now()); // Call here
       }
     });
 
-    // Dispose of the timer
     _measurementTimer?.cancel();
   }
 
@@ -65,6 +90,7 @@ class _UserHeartRateScreenState extends State<UserHeartRateScreen> {
         title: Text('Heart BPM Demo'),
       ),
       body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           isBPMEnabled
               ? dialog = HeartBPMDialog(
@@ -122,6 +148,84 @@ class _UserHeartRateScreenState extends State<UserHeartRateScreen> {
           !isBPMEnabled && bpm > 0
               ? Text("Average BPM: $bpm bpm", style: TextStyle(fontSize: 20))
               : SizedBox(),
+
+          SizedBox(height: 20),
+          // Switcher for daily/weekly averages
+          Center(
+            child: Container(
+              padding: EdgeInsets.all(5),
+              margin: EdgeInsets.symmetric(horizontal: 10),
+              decoration: BoxDecoration(
+                color: Color(0xfff4f6fa),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        buttonIndex = 0;
+                      });
+                    },
+                    child: Container(
+                      padding:
+                          EdgeInsets.symmetric(vertical: 15, horizontal: 25),
+                      decoration: BoxDecoration(
+                        color: buttonIndex == 0
+                            ? Color(0xFF238878)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        "Daily",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: buttonIndex == 0 ? Colors.white : Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        buttonIndex = 1;
+                      });
+                    },
+                    child: Container(
+                      padding:
+                          EdgeInsets.symmetric(vertical: 15, horizontal: 25),
+                      decoration: BoxDecoration(
+                        color: buttonIndex == 1
+                            ? Color(0xFF238878)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        "Weekly",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: buttonIndex == 1 ? Colors.white : Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(height: 20),
+          // Display the selected average
+          Center(
+            child: Text(
+              buttonIndex == 0
+                  ? "Daily Average: $dailyAverage BPM"
+                  : "Weekly Average: $weeklyAverage BPM",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
         ],
       ),
     );

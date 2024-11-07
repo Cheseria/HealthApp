@@ -43,7 +43,7 @@ dependencies:
   flutter_datetime_picker: ^1.5.0
   fl_chart: ^0.69.0
   heart_bpm: ^2.0.0+0
-  sensors_plus: ^3.1.0
+  pedometer: ^4.0.2
 
 dev_dependencies:
   flutter_test:
