@@ -68,7 +68,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide.none),
-                  label: Text("Enter Username"),
+                  label: Text("Enter Email"),
                   prefixIcon: Icon(Icons.person),
                 ),
               ),
