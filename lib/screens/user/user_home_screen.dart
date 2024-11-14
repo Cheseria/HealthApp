@@ -6,6 +6,7 @@ import 'package:healthapp/screens/settings_screen.dart';
 import 'package:healthapp/screens/user/user_heart_rate_screen.dart';
 import 'package:healthapp/screens/user/user_sleep_screen.dart';
 import 'package:healthapp/screens/user/user_steps_screen.dart';
+import 'package:healthapp/screens/user/user_water_screen.dart';
 
 class UserHomeScreen extends StatefulWidget {
   @override
@@ -222,7 +223,13 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                 ),
               ),
               InkWell(
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => UserWaterScreen(),
+                      ));
+                },
                 child: Container(
                   width:
                       MediaQuery.of(context).size.width * 0.4, // Adjust width

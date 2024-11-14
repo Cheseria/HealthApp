@@ -251,7 +251,7 @@ class _UserHeartRateScreenState extends State<UserHeartRateScreen> {
     return SingleChildScrollView(
       child: SizedBox(
         height: MediaQuery.of(context).size.height *
-            0.4, // Flexible height for scrolling
+            0.6, // Flexible height for scrolling
         child: PageView.builder(
           controller: _dayPageController,
           itemCount: 7, // 7 days
@@ -274,7 +274,7 @@ class _UserHeartRateScreenState extends State<UserHeartRateScreen> {
     return SingleChildScrollView(
       child: SizedBox(
         height: MediaQuery.of(context).size.height *
-            0.4, // Flexible height for scrolling
+            0.6, // Flexible height for scrolling
         child: PageView.builder(
           controller: _weekPageController,
           itemCount: 4, // 4 weeks
@@ -326,14 +326,14 @@ class _UserHeartRateScreenState extends State<UserHeartRateScreen> {
 
         final data = snapshot.data!;
 
-        // Safely retrieve and check `timestampedDataPoints` to avoid type issues
+        // Safely retrieve and check timestampedDataPoints to avoid type issues
         final List<Map<String, dynamic>> timestampedDataPoints =
             (data['timestampedDataPoints'] is List<Map<String, dynamic>>)
                 ? List<Map<String, dynamic>>.from(data['timestampedDataPoints'])
                 : [];
 
         return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Text(
               "${DateFormat('yyyy-MM-dd').format(day)}",
@@ -540,7 +540,8 @@ class _UserHeartRateScreenState extends State<UserHeartRateScreen> {
               ? Text("Time remaining: $countdown seconds",
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))
               : SizedBox(),
-          Center(
+          Padding(
+            padding: EdgeInsets.only(top: 20),
             child: ElevatedButton.icon(
               icon: Icon(Icons.favorite_rounded),
               label: Text(isBPMEnabled ? "Stop measurement" : "Measure BPM"),

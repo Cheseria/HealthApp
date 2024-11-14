@@ -29,8 +29,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         await _firestore.collection('users').doc(user.uid).get();
     if (userDoc.exists) {
       setState(() {
-        weight = userDoc['weight'] ?? 60;
-        height = userDoc['height'] ?? 170;
+        weight = userDoc['weight'] ?? 00;
+        height = userDoc['height'] ?? 000;
       });
     }
   }
@@ -67,41 +67,43 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       Function(int) onSelectedItemChanged) {
     showCupertinoModalPopup(
       context: context,
-      builder: (_) => Container(
-        height: 300,
-        color: Colors.white,
-        child: Column(
-          children: [
-            Container(
-              height: 250,
-              child: CupertinoPicker(
-                scrollController: FixedExtentScrollController(
-                    initialItem: currentValue - min),
-                itemExtent: 32.0,
-                onSelectedItemChanged: (int index) {
-                  onSelectedItemChanged(min + index);
-                },
-                children: List<Widget>.generate(max - min + 1, (int index) {
-                  return Center(
-                    child: Text(
-                      '${min + index}',
-                      style: TextStyle(fontSize: 24),
-                    ),
-                  );
-                }),
+      builder: (_) => SafeArea(
+        child: Container(
+          color: Colors.white,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                height: 250,
+                child: CupertinoPicker(
+                  scrollController: FixedExtentScrollController(
+                      initialItem: currentValue - min),
+                  itemExtent: 32.0,
+                  onSelectedItemChanged: (int index) {
+                    onSelectedItemChanged(min + index);
+                  },
+                  children: List<Widget>.generate(max - min + 1, (int index) {
+                    return Center(
+                      child: Text(
+                        '${min + index}',
+                        style: TextStyle(fontSize: 24),
+                      ),
+                    );
+                  }),
+                ),
               ),
-            ),
-            CupertinoButton(
-              child: Text('Done'),
-              onPressed: () {
-                Navigator.pop(context);
-                setState(() {
-                  _calculateBMI();
-                });
-                _updateUserData(); // Save updated weight and height to Firestore
-              },
-            )
-          ],
+              CupertinoButton(
+                child: Text('Done'),
+                onPressed: () {
+                  Navigator.pop(context);
+                  setState(() {
+                    _calculateBMI();
+                  });
+                  _updateUserData(); // Save updated weight and height to Firestore
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
