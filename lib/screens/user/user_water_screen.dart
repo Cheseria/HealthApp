@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,8 +18,6 @@ class _UserWaterScreenState extends State<UserWaterScreen>
   late Animation<double> waveAnimation;
   ValueNotifier<double> waterLevel = ValueNotifier(1.0); // Start at 100%
 
-  // Variables for hydration calculations
-  double weight = 70.0; // User weight in kg
   double dailyWaterIntake = 3000.0; // ml based on baseline
   double baseWaterLossPerHour = 125.0; // ml per hour
   double temperatureFactor = 1.0; // Base = 1.0
@@ -25,10 +25,39 @@ class _UserWaterScreenState extends State<UserWaterScreen>
   double stepRateFactor = 1.0; // Base = 1.0
   double heartRateFactor = 1.0; // Base = 1.0
   bool lowWaterNotified = false;
+  late double weight = 70;
+  late double age = 30;
+
+  Future<void> getUserProfile() async {
+    try {
+      // Replace 'your_user_id' with the actual ID of the current user
+      final snapshot = await FirebaseFirestore.instance
+          .collection(
+              'users') // Assuming 'users' is the collection storing profiles
+          .doc(userId) // Document ID (user's unique ID)
+          .get();
+
+      final data = snapshot.data();
+
+      if (data != null) {
+        // Fetch weight and age from the profile
+        setState(() {
+          weight = data['weight'] ?? 70.0;
+          age = data['age'] ?? 30;
+
+          // Recalculate dailyWaterIntake based on the updated weight
+          dailyWaterIntake = weight * 35; // Example formula: 35 ml per kg
+        });
+      }
+    } catch (e) {
+      print("Error fetching user profile: $e");
+    }
+  }
 
   @override
   void initState() {
     super.initState();
+    getUserProfile();
 
     // Initialize wave animation controller
     waveController =
@@ -41,15 +70,11 @@ class _UserWaterScreenState extends State<UserWaterScreen>
 
     waveController.repeat(); // Continuously animates the wave
 
-    // Set daily water intake based on weight (formula: 35 ml per kg)
-    dailyWaterIntake =
-        weight * 35; // Example baseline: 35ml per kg of body weight
-
     // Timer for reducing water level every 15 minutes (2 seconds for testing)
     Timer.periodic(Duration(seconds: 2), (timer) {
       if (waterLevel.value > 0) {
         setState(() {
-          double waterLoss = calculateWaterLoss();
+          double waterLoss = calculateWaterLoss() as double;
           waterLevel.value =
               (waterLevel.value - waterLoss / dailyWaterIntake).clamp(0.0, 1.0);
 
@@ -82,8 +107,25 @@ class _UserWaterScreenState extends State<UserWaterScreen>
     });
   }
 
+  // Function to calculate the age factor
+  double calculateAgeFactor(double age) {
+    // Formula for age factor:
+    // Age Factor = 1 + (age - 30) * 0.005 if age > 30, otherwise 1
+    if (age > 30) {
+      return 1 + ((age - 30) * 0.005);
+    } else {
+      return 1.0; // Neutral factor for age <= 30
+    }
+  }
+
+  // Firebase references
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+
   // Function to calculate water loss based on factors
   double calculateWaterLoss() {
+    double ageFactor = calculateAgeFactor(age);
+
     // Adjusted for a 15-minute period from hourly rate
     double adjustedBaseLoss = baseWaterLossPerHour / 4;
 
@@ -108,7 +150,8 @@ class _UserWaterScreenState extends State<UserWaterScreen>
         temperatureFactor *
         humidityFactor *
         stepRateFactor *
-        heartRateFactor;
+        heartRateFactor *
+        ageFactor;
   }
 
   @override

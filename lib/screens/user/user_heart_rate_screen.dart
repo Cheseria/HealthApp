@@ -341,7 +341,7 @@ class _UserHeartRateScreenState extends State<UserHeartRateScreen> {
             ),
             heartRateDataCard(Icons.monitor_heart_outlined, "Minimum BPM",
                 "${data['minBPM'] ?? 0}"),
-            heartRateDataCard(Icons.monitor_heart_outlined, "Minimum BPM",
+            heartRateDataCard(Icons.monitor_heart_outlined, "Maximum BPM",
                 "${data['maxBPM'] ?? 0}"),
             SizedBox(height: 10),
             if (timestampedDataPoints.isNotEmpty) ...[

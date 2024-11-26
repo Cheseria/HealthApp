@@ -5,9 +5,9 @@ import 'package:flutter_background/flutter_background.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart'; // For Firebase integration
-import 'package:firebase_auth/firebase_auth.dart'; // For Firebase Authentication
-import 'package:intl/intl.dart'; // For date formatting
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 
 class UserStepsScreen extends StatefulWidget {
   @override
@@ -17,21 +17,22 @@ class UserStepsScreen extends StatefulWidget {
 class _UserStepsScreenState extends State<UserStepsScreen>
     with TickerProviderStateMixin {
   int stepCount = 0;
+  int baseStepCount = 0;
   List<BarChartGroupData> barChartData = [];
   List<Map<String, dynamic>> stepData = [];
 
   int touchedHour = -1;
   bool isLoading = true;
   String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+  DateTime nextMidnight = DateTime.now().add(Duration(days: 1));
 
   @override
   void initState() {
     super.initState();
     print("App initialized");
     _initializeBackgroundTracking();
-    _loadStepCount(); // Load stored step count when the app starts
-    _setupDailyReset(); // Set up the daily reset at 00:00 AM
-    _startFirebaseStepTracking(); // Store step count in Firebase every hour
+    _startStepTracking();
+    _loadStepCount();
     _fetchStepData();
   }
 
@@ -59,29 +60,23 @@ class _UserStepsScreenState extends State<UserStepsScreen>
     }
   }
 
-  void _startStepTracking() {
+  Future<void> _startStepTracking() async {
     print("Starting step tracking...");
     Pedometer.stepCountStream.listen((StepCount event) {
       setState(() {
-        stepCount = event.steps;
+        stepCount = event.steps - baseStepCount; // Subtract base step count
+        _storeStepCount(stepCount);
       });
       print("Updated Step Count: $stepCount");
-
-      // Store the step count to SharedPreferences
-      _storeStepCountLocally(stepCount);
     }).onError((error) {
       print("Pedometer Error: $error");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Pedometer Error: $error")),
-      );
     });
   }
 
-  // Store step count to SharedPreferences
-  Future<void> _storeStepCountLocally(int steps) async {
+  Future<void> _storeStepCount(int steps) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setInt('stepCount', steps);
-    print("Stored step count to SharedPreferences: $steps");
+    print("Stored step count: $steps");
   }
 
   // Load stored step count from SharedPreferences
@@ -91,65 +86,6 @@ class _UserStepsScreenState extends State<UserStepsScreen>
       stepCount = prefs.getInt('stepCount') ?? 0;
     });
     print("Loaded stored step count: $stepCount");
-  }
-
-  // Setup daily reset at 00:00 AM
-  void _setupDailyReset() {
-    DateTime now = DateTime.now();
-    DateTime resetTime = DateTime(now.year, now.month, now.day + 1, 0, 0, 0);
-
-    int timeToWait = resetTime.difference(now).inMilliseconds;
-
-    Timer(Duration(milliseconds: timeToWait), () {
-      print("Resetting step count for the new day...");
-      setState(() {
-        stepCount = 0; // Reset the step count at midnight
-      });
-      _storeStepCountLocally(stepCount); // Optionally store reset step count
-      _storeStepCountInFirebase(
-          stepCount); // Store reset step count in Firebase
-      _setupDailyReset(); // Reinitialize the daily reset for the next day
-    });
-  }
-
-  // Store the step count to Firebase every hour
-  Future<void> _startFirebaseStepTracking() async {
-    Timer.periodic(Duration(seconds: 15), (timer) {
-      _storeStepCountInFirebase(stepCount);
-      print("stored");
-    });
-  }
-
-  // Store the step count in Firebase under users/{userId}/stepCount/{YYYY-MM-DD}
-  Future<void> _storeStepCountInFirebase(int steps) async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      // Get the current date in YYYY-MM-DD format
-      String currentDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
-      // Get the current hour in HH:mm format
-      String currentHour = DateFormat('HH').format(DateTime.now());
-
-      // Define the hourly interval as "HH:mm-HH:mm"
-      String hourlyInterval =
-          "${currentHour}:00-${(int.parse(currentHour) + 1).toString().padLeft(2, '0')}:00";
-
-      DocumentReference stepCountRef = FirebaseFirestore.instance
-          .collection('users')
-          .doc(userId)
-          .collection('stepCount')
-          .doc(currentDate) // Document named by the current date
-          .collection('hourly') // Subcollection for hourly data
-          .doc(hourlyInterval); // Document named by the hourly interval
-
-      await stepCountRef.set({
-        'steps': steps,
-        'timestamp': Timestamp.now(),
-      }, SetOptions(merge: true)); // Merge true to update existing data
-      print(
-          "Stored step count to Firebase: $steps on $currentDate at $hourlyInterval");
-    } else {
-      print("No user is logged in. Cannot store step count to Firebase.");
-    }
   }
 
   Future<void> _fetchStepData() async {

@@ -7,13 +7,13 @@ class ChatServices {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Stream<List<Map<String, dynamic>>> getUsersStream() {
-    return _firestore.collection("users").snapshots().map((snapshot) {
-      return snapshot.docs.map((doc) {
-        final user = doc.data() as Map<String, dynamic>?;
-
-        return user ?? {}; // Return empty map if null
-      }).toList();
-    });
+    return FirebaseFirestore.instance
+        .collection('users')
+        .where('role', isEqualTo: 'doctor') // Query only doctors
+        .snapshots() // Listen for real-time updates
+        .map((querySnapshot) => querySnapshot.docs
+            .map((doc) => doc.data() as Map<String, dynamic>)
+            .toList());
   }
 
   Future<void> sendMessage(String receiverID, message) async {

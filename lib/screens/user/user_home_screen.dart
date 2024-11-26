@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:healthapp/screens/settings_screen.dart';
+import 'package:healthapp/screens/user/user_check_symptoms.dart';
 import 'package:healthapp/screens/user/user_heart_rate_screen.dart';
 import 'package:healthapp/screens/user/user_sleep_screen.dart';
 import 'package:healthapp/screens/user/user_steps_screen.dart';
@@ -113,7 +114,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => UserStepsScreen(),
+                        builder: (context) => UserCheckSymptoms(),
                       ));
                 },
                 child: Container(
@@ -137,7 +138,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                       Padding(
                         padding: EdgeInsets.symmetric(vertical: 5),
                         child: Text(
-                          "4400",
+                          "Feeling sick?",
                           style: TextStyle(
                             fontSize: 30,
                             color: Colors.black,
@@ -146,7 +147,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                         ),
                       ),
                       Text(
-                        "/8000 steps",
+                        "Tell me your symptoms",
                         style: TextStyle(
                           color: Colors.black,
                         ),
@@ -378,7 +379,13 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                 ),
               ),
               InkWell(
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => UserStepsScreen(),
+                      ));
+                },
                 child: Container(
                   padding: EdgeInsets.all(10),
                   decoration: BoxDecoration(
@@ -405,8 +412,8 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
-                              Icons.water_drop,
-                              color: Colors.red,
+                              Icons.directions_walk,
+                              color: Colors.black,
                               size: 35,
                             ),
                           ),
@@ -415,16 +422,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "Blood",
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  color: Color(0xFF238878),
-                                  fontWeight: FontWeight.bold,
-                                  height: 1,
-                                ),
-                              ),
-                              Text(
-                                "Pressure",
+                                "Steps",
                                 style: TextStyle(
                                   fontSize: 20,
                                   color: Color(0xFF238878),

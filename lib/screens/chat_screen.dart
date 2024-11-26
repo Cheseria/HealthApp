@@ -36,12 +36,10 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
 
-    //add listener to focus node
+    // Add listener to focus node
     myFocusNode.addListener(() {
       if (myFocusNode.hasFocus) {
-        // cause a delay so that the keyboard has time to show up
-        // then the amount of remaining space will be calculated
-        // then scroll down
+        // Cause a delay so that the keyboard has time to show up, then scroll
         Future.delayed(
           const Duration(milliseconds: 500),
           () => scrollDown(),
@@ -49,27 +47,30 @@ class _ChatScreenState extends State<ChatScreen> {
       }
     });
 
-    Future.delayed(
-      const Duration(milliseconds: 500),
-      () => scrollDown(),
-    );
+    // Delay scroll after the first frame is rendered
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 500), () => scrollDown());
+    });
   }
 
   @override
   void dispose() {
     myFocusNode.dispose();
     _messageController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
   //scroll controller
   final ScrollController _scrollController = ScrollController();
   void scrollDown() {
-    _scrollController.animateTo(
-      _scrollController.position.maxScrollExtent,
-      duration: const Duration(seconds: 1),
-      curve: Curves.fastOutSlowIn,
-    );
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(seconds: 1),
+        curve: Curves.fastOutSlowIn,
+      );
+    }
   }
 
   //send message
@@ -117,7 +118,8 @@ class _ChatScreenState extends State<ChatScreen> {
       builder: (context, snapshot) {
         //errors
         if (snapshot.hasError) {
-          return const Text("Error");
+          debugPrint('Stream error: ${snapshot.error}');
+          return Text('Error: ${snapshot.error}');
         }
 
         //loading
