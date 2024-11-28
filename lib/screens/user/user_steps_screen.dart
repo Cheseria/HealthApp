@@ -1,8 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:pedometer/pedometer.dart';
-import 'package:flutter_background/flutter_background.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:healthapp/services/background_tasks.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -30,53 +28,8 @@ class _UserStepsScreenState extends State<UserStepsScreen>
   void initState() {
     super.initState();
     print("App initialized");
-    _initializeBackgroundTracking();
-    _startStepTracking();
     _loadStepCount();
     _fetchStepData();
-  }
-
-  Future<void> _initializeBackgroundTracking() async {
-    if (await _requestPermissions()) {
-      bool backgroundEnabled = await FlutterBackground.initialize();
-      if (backgroundEnabled) {
-        await FlutterBackground.enableBackgroundExecution();
-        _startStepTracking();
-      }
-    }
-  }
-
-  Future<bool> _requestPermissions() async {
-    final activityPermission = await Permission.activityRecognition.request();
-    if (activityPermission.isGranted) {
-      print("Activity recognition permission granted.");
-      return true;
-    } else {
-      print("Activity recognition permission denied.");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Activity recognition permission denied')),
-      );
-      return false;
-    }
-  }
-
-  Future<void> _startStepTracking() async {
-    print("Starting step tracking...");
-    Pedometer.stepCountStream.listen((StepCount event) {
-      setState(() {
-        stepCount = event.steps - baseStepCount; // Subtract base step count
-        _storeStepCount(stepCount);
-      });
-      print("Updated Step Count: $stepCount");
-    }).onError((error) {
-      print("Pedometer Error: $error");
-    });
-  }
-
-  Future<void> _storeStepCount(int steps) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('stepCount', steps);
-    print("Stored step count: $steps");
   }
 
   // Load stored step count from SharedPreferences
