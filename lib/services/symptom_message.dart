@@ -1,11 +1,11 @@
-class SymptomMessage {
-  final String text;
-  final bool isUser;
-  final List<String>? options; // Options to present to the user (if any)
+import 'package:flutter/material.dart';
 
-  SymptomMessage({
-    required this.text,
-    this.isUser = false,
-    this.options,
-  });
+class SymptomMessage {
+  final String? text;
+  final RichText? richText;
+  final bool isUser;
+  final List<String>? options;
+
+  SymptomMessage(
+      {this.text, this.richText, required this.isUser, this.options});
 }
