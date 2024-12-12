@@ -18,7 +18,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
     with TickerProviderStateMixin {
   late AnimationController waveController;
   late Animation<double> waveAnimation;
-  ValueNotifier<double> waterLevel = ValueNotifier(0.5); // Starts at 50%
+  ValueNotifier<double> waterLevel = ValueNotifier(0.1); // Starts at 50%
 
   late AnimationController starController; // Animation controller for stars
   late List<Star> stars; // List to hold star positions
@@ -170,6 +170,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                       ));
                 },
                 child: Container(
+                  width: MediaQuery.of(context).size.width * 0.4,
                   padding: EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -189,7 +190,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                       Row(
                         children: [
                           Container(
-                            padding: EdgeInsets.all(8),
+                            padding: EdgeInsets.all(5),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               shape: BoxShape.circle,
@@ -197,28 +198,28 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                             child: Icon(
                               CupertinoIcons.heart_fill,
                               color: Colors.red,
-                              size: 35,
+                              size: 25,
                             ),
                           ),
                           SizedBox(height: 30),
                           Text(
                             "Heartbeat",
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 20,
                               color: Color(0xFF238878),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
                       ),
-                      SizedBox(height: 5),
+                      SizedBox(height: 10),
                       Text(
-                        "Make an appointment",
+                        "Measure Your Heartrate",
                         style: TextStyle(
                           color: Colors.black,
                         ),
                       ),
-                      SizedBox(height: 30),
+                      SizedBox(height: 10),
                     ],
                   ),
                 ),
@@ -264,8 +265,8 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                                       padding: EdgeInsets.all(8),
                                       child: Icon(
                                         CupertinoIcons.drop,
-                                        color: Colors.blue,
-                                        size: 35,
+                                        color: Colors.white,
+                                        size: 25,
                                       ),
                                     ),
                                     SizedBox(height: 30),
@@ -273,22 +274,21 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                                       "Water",
                                       style: TextStyle(
                                         fontSize: 20,
-                                        color: Colors
-                                            .white, // Make text color white
+                                        color: Colors.white,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                   ],
                                 ),
-                                SizedBox(height: 5),
+                                SizedBox(height: 10),
                                 Text(
-                                  "Make an appointment",
+                                  "Stay Hydrated",
                                   style: TextStyle(
                                     color: Colors
                                         .white, // White text for visibility
                                   ),
                                 ),
-                                SizedBox(height: 30),
+                                SizedBox(height: 25),
                               ],
                             ),
                           ),
@@ -341,18 +341,18 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                                 Row(
                                   children: [
                                     Container(
-                                      padding: EdgeInsets.all(8),
+                                      padding: EdgeInsets.all(5),
                                       child: Icon(
                                         CupertinoIcons.moon_fill,
                                         color: Colors.yellow,
-                                        size: 35,
+                                        size: 25,
                                       ),
                                     ),
-                                    SizedBox(height: 30),
+                                    SizedBox(height: 20),
                                     Text(
-                                      "Sleep",
+                                      "Sleep Tracker",
                                       style: TextStyle(
-                                        fontSize: 20,
+                                        fontSize: 15,
                                         color: Colors
                                             .white, // Make text color white
                                         fontWeight: FontWeight.bold,
@@ -360,15 +360,15 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                                     ),
                                   ],
                                 ),
-                                SizedBox(height: 5),
+                                SizedBox(height: 10),
                                 Text(
-                                  "Make an appointment",
+                                  "Do you get enough sleep?",
                                   style: TextStyle(
                                     color: Colors
                                         .white, // White text for visibility
                                   ),
                                 ),
-                                SizedBox(height: 30),
+                                SizedBox(height: 10),
                               ],
                             ),
                           ),
@@ -387,6 +387,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                       ));
                 },
                 child: Container(
+                  width: MediaQuery.of(context).size.width * 0.4,
                   padding: EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -406,7 +407,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                       Row(
                         children: [
                           Container(
-                            padding: EdgeInsets.all(8),
+                            padding: EdgeInsets.all(5),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               shape: BoxShape.circle,
@@ -414,7 +415,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                             child: Icon(
                               Icons.directions_walk,
                               color: Colors.black,
-                              size: 35,
+                              size: 25,
                             ),
                           ),
                           SizedBox(height: 30),
@@ -434,14 +435,14 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                           ),
                         ],
                       ),
-                      SizedBox(height: 5),
+                      SizedBox(height: 10),
                       Text(
-                        "Make an appointment",
+                        "How far have you gone?",
                         style: TextStyle(
                           color: Colors.black,
                         ),
                       ),
-                      SizedBox(height: 30),
+                      SizedBox(height: 10),
                     ],
                   ),
                 ),
@@ -560,7 +561,7 @@ class WavePainter extends CustomPainter {
     final paint = Paint()..color = Colors.blue;
     final path = Path();
 
-    final waveHeight = 10.0; // Wave amplitude
+    final waveHeight = 5.0; // Wave amplitude
     final waveLength = size.width / 2; // Wave length
 
     path.moveTo(0, size.height * waterLevel);

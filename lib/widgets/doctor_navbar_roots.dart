@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:healthapp/screens/doctor/doctor_profile_screen.dart';
+import 'package:healthapp/screens/doctor/doctor_schedule_screen.dart';
 
 class DoctorNavbarRoots extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -18,7 +19,7 @@ class _DoctorNavbarRootsState extends State<DoctorNavbarRoots> {
   @override
   Widget build(BuildContext context) {
     final screens = [
-      Container(),
+      const DoctorScheduleScreen(),
       Container(),
       DoctorProfileScreen(userData: widget.userData),
     ];

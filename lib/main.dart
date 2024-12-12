@@ -19,7 +19,7 @@ Future<void> main() async {
 
   // Schedule the background task every 15 minutes
   await AndroidAlarmManager.periodic(
-    const Duration(minutes: 5),
+    const Duration(minutes: 1),
     1, // Unique ID for the task
     BackgroundTasks.syncStepCountToFirebase,
     wakeup: true, // Ensure it wakes up the device if necessary
