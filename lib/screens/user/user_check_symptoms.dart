@@ -3,10 +3,9 @@ import 'dart:typed_data';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:tflite/tflite.dart';
+import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:healthapp/services/symptom_message.dart';
 import 'package:healthapp/services/symptoms_list.dart';
-import 'package:tflite_flutter/tflite_flutter.dart';
 
 import 'package:url_launcher/url_launcher.dart'; // For launching URLs in a browser
 
@@ -26,6 +25,7 @@ class UserCheckSymptomsState extends State<UserCheckSymptoms> {
 
   String? selectedCategory; // Track the currently selected category
   List<String> selectedSymptoms = []; // Track selected symptoms
+  late Interpreter _interpreter;
 
   @override
   void initState() {
@@ -33,16 +33,19 @@ class UserCheckSymptomsState extends State<UserCheckSymptoms> {
     loadModel();
   }
 
+// Load the model
   Future<void> loadModel() async {
-    String? res = await Tflite.loadModel(
-      model: "assets/tflite/your_model.tflite",
-    );
-    print(res); // Optional: check if the model loads successfully
+    try {
+      _interpreter = await Interpreter.fromAsset('assets/tflite/model.tflite');
+      print("TFLite model loaded successfully.");
+    } catch (e) {
+      print("Error loading model: $e");
+    }
   }
 
   @override
   void dispose() {
-    Tflite.close(); // Dispose model when not needed to free resources
+    _interpreter.close(); // Dispose model when not needed to free resources
     super.dispose();
   }
 
@@ -137,23 +140,33 @@ class UserCheckSymptomsState extends State<UserCheckSymptoms> {
   }
 
   Future<void> diagnoseSymptoms() async {
+    Interpreter? interpreter; // Declare interpreter to dispose later
     try {
+      // Step 1: Load supporting files
       List<String> featureNames = await loadFeatureNames();
       List<String> diseaseLabels = await loadDiseaseLabels();
       Map<String, dynamic> icdMapping = await loadICD10Mapping();
 
+      // Step 2: Convert user symptoms into feature vector
       List<double> inputFeatures =
           convertSymptomsToFeatures(selectedSymptoms, featureNames);
       Float32List inputAsFloat32List = Float32List.fromList(inputFeatures);
 
-      final interpreter =
-          await Interpreter.fromAsset('assets/tflite/model.tflite');
-      var input = [inputAsFloat32List];
-      var output = List.filled(1 * diseaseLabels.length, 0.0)
-          .reshape([1, diseaseLabels.length]);
+      // Step 3: Initialize the TFLite interpreter
+      print("Loading TFLite model...");
+      interpreter = await Interpreter.fromAsset('assets/tflite/model.tflite');
+      print("Model loaded successfully.");
 
+      // Step 4: Prepare input and output tensors
+      var input = [inputAsFloat32List]; // Input data
+      var output = List.filled(diseaseLabels.length, 0.0)
+          .reshape([1, diseaseLabels.length]); // Output container
+
+      // Step 5: Run inference
+      print("Running model inference...");
       interpreter.run(input, output);
 
+      // Step 6: Process the output
       List<double> probabilities = output[0];
       List<int> topIndices =
           List.generate(probabilities.length, (index) => index);
@@ -162,18 +175,22 @@ class UserCheckSymptomsState extends State<UserCheckSymptoms> {
 
       String result = "Top Predictions:\n";
       String diseaseName = "";
+
       for (int i = 0; i < top3Indices.length; i++) {
         int index = top3Indices[i];
         diseaseName = diseaseLabels[index];
         double confidence = probabilities[index] * 100;
+
         result +=
             "${i + 1}. ${diseaseName} - ${confidence.toStringAsFixed(2)}%\n";
 
         if (i == 0) {
+          // Fetch treatment info only for the top prediction
           await getTreatmentInfo(diseaseName, icdMapping[diseaseName]);
         }
       }
 
+      // Step 7: Update the UI with results
       setState(() {
         messages.add(SymptomMessage(
           text: result,
@@ -181,7 +198,19 @@ class UserCheckSymptomsState extends State<UserCheckSymptoms> {
         ));
       });
     } catch (e) {
-      print("Error while running model: $e");
+      // Handle errors and print messages for debugging
+      print("Error during model execution: $e");
+      setState(() {
+        messages.add(SymptomMessage(
+          text:
+              "An error occurred while diagnosing symptoms. Please try again.",
+          isUser: false,
+        ));
+      });
+    } finally {
+      // Step 8: Dispose the interpreter to free resources
+      interpreter?.close();
+      print("TFLite interpreter disposed.");
     }
   }
 
@@ -250,7 +279,7 @@ class UserCheckSymptomsState extends State<UserCheckSymptoms> {
     final String csvString =
         await rootBundle.loadString('assets/tflite/feature_name.csv');
     List<String> featureNames =
-        csvString.split('\n').map((e) => e.trim()).toList();
+        csvString.split(',').map((e) => e.trim()).toList();
     // Remove any empty entries caused by trailing new lines
     featureNames.removeWhere((element) => element.isEmpty);
     return featureNames;

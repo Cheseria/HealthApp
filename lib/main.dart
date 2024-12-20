@@ -5,17 +5,39 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_background/flutter_background.dart';
 import 'firebase_options.dart';
 import 'package:healthapp/screens/auth_screen.dart';
-import 'package:healthapp/services/background_tasks.dart'; // Import your background task file
+import 'package:healthapp/services/background_tasks.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await AndroidAlarmManager.initialize();
 
+  // Initialize notifications
+  const AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+
+  const InitializationSettings initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+  );
+
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
   print("Initializing background tasks...");
   await initializeBackgroundTasks();
 
   runApp(const MyApp());
+
+  await AndroidAlarmManager.periodic(
+    const Duration(minutes: 15), // Run every 15 minutes
+    2, // Unique ID for water loss task
+    BackgroundTasks.calculateAndUpdateWaterLoss,
+    wakeup: true, // Wake up the device if necessary
+    exact: true, // Use exact timing
+  );
 
   // Schedule the background task every 15 minutes
   await AndroidAlarmManager.periodic(

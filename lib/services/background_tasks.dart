@@ -2,14 +2,85 @@ import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:healthapp/main.dart';
 import 'package:pedometer/pedometer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter/material.dart'; // Required for WidgetsFlutterBinding.ensureInitialized()
-import '../firebase_options.dart'; // Import your Firebase options
+import 'package:flutter/material.dart';
+import '../firebase_options.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class BackgroundTasks {
   static StreamSubscription<StepCount>? _stepCountSubscription;
+
+  /// Calculates water loss based on environmental and user factors
+  static Future<void> calculateAndUpdateWaterLoss() async {
+    try {
+      // Fetch the required data from SharedPreferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      double dailyWaterIntake =
+          prefs.getDouble('dailyWaterIntake') ?? 3000.0; // ml
+      double currentWaterLevel = prefs.getDouble('currentWaterLevel') ??
+          1.0; // Percentage (1.0 = 100%)
+
+      // Mock environmental and user activity data
+      double baseWaterLossPerHour = 125.0; // ml
+      double temperatureFactor = 1.05; // Example for 30°C
+      double humidityFactor = 1.1; // Example for 85% humidity
+      double stepRateFactor = 1.02; // Example for 300 steps in 15 mins
+      double heartRateFactor = 1.0; // Default for normal heart rate
+      double ageFactor = 1.0; // Neutral factor for age <= 30
+
+      // Adjust water loss for a 15-minute interval
+      double adjustedWaterLoss = (baseWaterLossPerHour / 4) *
+          temperatureFactor *
+          humidityFactor *
+          stepRateFactor *
+          heartRateFactor *
+          ageFactor;
+
+      // Update water level
+      currentWaterLevel =
+          (currentWaterLevel - adjustedWaterLoss / dailyWaterIntake)
+              .clamp(0.0, 1.0);
+
+      // Save the updated water level in SharedPreferences
+      await prefs.setDouble('currentWaterLevel', currentWaterLevel);
+      print(
+          "Updated water level: ${(currentWaterLevel * 100).toStringAsFixed(1)}%");
+
+      // Trigger notification if water level falls below 60%
+      if (currentWaterLevel < 0.6) {
+        _notifyLowWaterLevel();
+        print("Notification sent!");
+      }
+    } catch (e) {
+      print("Error calculating water loss: $e");
+    }
+  }
+
+  /// Sends a low water level notification
+  static Future<void> _notifyLowWaterLevel() async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'water_channel', // Channel ID
+      'Water Notifications', // Channel name
+      channelDescription: 'Notification for low hydration levels',
+      importance: Importance.high,
+      priority: Priority.high,
+      showWhen: false,
+    );
+
+    const NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+
+    await flutterLocalNotificationsPlugin.show(
+      0, // Notification ID
+      'Hydration Alert',
+      'Your hydration level is below 60%. Please drink water!',
+      platformChannelSpecifics,
+    );
+  }
 
   static void initializePedometerStream() {
     if (_stepCountSubscription == null || _stepCountSubscription!.isPaused) {

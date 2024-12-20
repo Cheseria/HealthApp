@@ -24,6 +24,10 @@ class _UserHomeScreenState extends State<UserHomeScreen>
   late List<Star> stars; // List to hold star positions
   final int numberOfStars = 30; // Number of stars to display
 
+  late AnimationController terrainController;
+  late Animation<double> terrainAnimation;
+  late AnimationController heartRateController;
+
   @override
   void initState() {
     super.initState();
@@ -51,6 +55,22 @@ class _UserHomeScreenState extends State<UserHomeScreen>
       double radius = Random().nextDouble() * 2; // Smaller radius (0.0 to 1.0)
       return Star(x: x, y: y, radius: radius);
     });
+
+    // Terrain animation controller
+    terrainController = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: 5), // Loop every 5 seconds
+    )..repeat(); // Repeat the animation
+
+    // Terrain animation value
+    terrainAnimation =
+        Tween<double>(begin: 0.0, end: 100.0).animate(terrainController);
+
+    // New heartRateController for Heart Rate
+    heartRateController = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: 5), // Adjust speed if necessary
+    )..repeat();
   }
 
   final user = FirebaseAuth.instance.currentUser!;
@@ -164,16 +184,15 @@ class _UserHomeScreenState extends State<UserHomeScreen>
               InkWell(
                 onTap: () {
                   Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => UserHeartRateScreen(),
-                      ));
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => UserHeartRateScreen(),
+                    ),
+                  );
                 },
                 child: Container(
                   width: MediaQuery.of(context).size.width * 0.4,
-                  padding: EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Colors.white,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(color: Color(0xFFC3D3CC), width: 1),
                     boxShadow: [
@@ -184,42 +203,70 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                       ),
                     ],
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Stack(
                     children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: EdgeInsets.all(5),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              CupertinoIcons.heart_fill,
-                              color: Colors.red,
-                              size: 25,
-                            ),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: SizedBox(
+                          height: 115,
+                          child: AnimatedBuilder(
+                            animation:
+                                heartRateController, // Heartbeat animation controller
+                            builder: (context, child) {
+                              return CustomPaint(
+                                painter: HeartRateBackgroundPainter(
+                                  heartRateController.value *
+                                      100, // Pass animation value
+                                ),
+                                child: Container(),
+                              );
+                            },
                           ),
-                          SizedBox(height: 30),
-                          Text(
-                            "Heartbeat",
-                            style: TextStyle(
-                              fontSize: 20,
-                              color: Color(0xFF238878),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        "Measure Your Heartrate",
-                        style: TextStyle(
-                          color: Colors.black,
                         ),
                       ),
-                      SizedBox(height: 10),
+                      Container(
+                        padding: EdgeInsets.all(10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: EdgeInsets.all(5),
+                                  child: Icon(
+                                    CupertinoIcons.heart_fill,
+                                    color: Colors.red,
+                                    size: 25,
+                                  ),
+                                ),
+                                SizedBox(height: 30),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Heartrate",
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        height: 1,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 10),
+                            Text(
+                              "Measure Your Heartrate",
+                              style: TextStyle(
+                                color: Colors.white,
+                              ),
+                            ),
+                            SizedBox(height: 10),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -381,16 +428,15 @@ class _UserHomeScreenState extends State<UserHomeScreen>
               InkWell(
                 onTap: () {
                   Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => UserStepsScreen(),
-                      ));
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => UserStepsScreen(),
+                    ),
+                  );
                 },
                 child: Container(
                   width: MediaQuery.of(context).size.width * 0.4,
-                  padding: EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Colors.white,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(color: Color(0xFFC3D3CC), width: 1),
                     boxShadow: [
@@ -401,48 +447,59 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                       ),
                     ],
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Stack(
                     children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: EdgeInsets.all(5),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.directions_walk,
-                              color: Colors.black,
-                              size: 25,
-                            ),
-                          ),
-                          SizedBox(height: 30),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Steps",
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  color: Color(0xFF238878),
-                                  fontWeight: FontWeight.bold,
-                                  height: 1,
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: CustomPaint(
+                          painter: StepsBackgroundPainter(terrainAnimation
+                              .value), // Custom background painter
+                          child: Container(
+                            padding: EdgeInsets.all(10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.all(5),
+                                      child: Icon(
+                                        Icons.directions_walk,
+                                        color: Colors.white,
+                                        size: 25,
+                                      ),
+                                    ),
+                                    SizedBox(height: 30),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "Steps",
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            height: 1,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
-                              ),
-                            ],
+                                SizedBox(height: 10),
+                                Text(
+                                  "How far have you gone?",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+                              ],
+                            ),
                           ),
-                        ],
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        "How far have you gone?",
-                        style: TextStyle(
-                          color: Colors.black,
                         ),
                       ),
-                      SizedBox(height: 10),
                     ],
                   ),
                 ),
@@ -498,7 +555,9 @@ class _UserHomeScreenState extends State<UserHomeScreen>
   @override
   void dispose() {
     waveController.dispose();
-    starController.dispose(); // Dispose of star controller
+    starController.dispose();
+    terrainController.dispose();
+    heartRateController.dispose();
     super.dispose();
   }
 }
@@ -581,4 +640,121 @@ class WavePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+class StepsBackgroundPainter extends CustomPainter {
+  final double animationValue; // Animation value for movement
+
+  StepsBackgroundPainter(this.animationValue);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Grass (Green top layer)
+    final Paint grassPaint = Paint()..color = Color(0xFF00AA00); // Green color
+    final Rect grassRect = Rect.fromLTWH(0, 0, size.width, size.height * 0.4);
+    canvas.drawRect(grassRect, grassPaint);
+
+    // Soil (Brown bottom layer)
+    final Paint soilPaint = Paint()..color = Color(0xFF8B4513); // Brown color
+    final Rect soilRect =
+        Rect.fromLTWH(0, size.height * 0.4, size.width, size.height * 0.6);
+    canvas.drawRect(soilRect, soilPaint);
+
+    // Add soil texture
+    final Paint soilTexturePaint = Paint()
+      ..color = Color(0xFF5C3317).withOpacity(0.3) // Darker brown for texture
+      ..style = PaintingStyle.fill;
+
+    for (double x = -animationValue % 10; x < size.width; x += 10) {
+      for (double y = size.height * 0.4; y < size.height; y += 10) {
+        canvas.drawCircle(
+            Offset(x + 5, y + 5), 3, soilTexturePaint); // Small soil dots
+      }
+    }
+
+    // Grass texture (Optional blades of grass)
+    final Paint grassBladePaint = Paint()
+      ..color = Color(0xFF007700) // Darker green for grass blades
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+
+    for (double x = -animationValue % 15; x < size.width; x += 15) {
+      canvas.drawLine(
+        Offset(x, size.height * 0.35),
+        Offset(x + 5, size.height * 0.3), // Grass blades slant
+        grassBladePaint,
+      );
+      canvas.drawLine(
+        Offset(x + 7, size.height * 0.37),
+        Offset(x + 12, size.height * 0.32), // Grass blades slant
+        grassBladePaint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return true;
+  }
+}
+
+class HeartRateBackgroundPainter extends CustomPainter {
+  final double animationValue;
+
+  HeartRateBackgroundPainter(this.animationValue);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Background gradient
+    final Rect rect = Rect.fromLTWH(0, 0, size.width, size.height);
+    final Gradient gradient = LinearGradient(
+      colors: [Color(0xFFFF4D4D), Color(0xFFFF8080)], // Dark red to light red
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+    final Paint backgroundPaint = Paint()..shader = gradient.createShader(rect);
+    canvas.drawRect(rect, backgroundPaint);
+
+    // ECG wave
+    final Paint wavePaint = Paint()
+      ..color = Colors.white
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+
+    Path wavePath = Path();
+    double midHeight = size.height / 2;
+    double waveLength = 100; // Length of one heartbeat cycle
+    double startX =
+        -animationValue % waveLength - waveLength; // Start slightly off-screen
+
+    // Draw continuous waves
+    for (double x = startX; x < size.width + waveLength; x += waveLength) {
+      // P wave (small bump)
+      wavePath.quadraticBezierTo(
+        x + waveLength * 0.1, midHeight - 10, // Up
+        x + waveLength * 0.2, midHeight, // Back to mid
+      );
+
+      // QRS Complex (sharp peak)
+      wavePath.lineTo(x + waveLength * 0.3, midHeight + 5); // Small dip (Q)
+      wavePath.lineTo(x + waveLength * 0.35, midHeight - 40); // Sharp peak (R)
+      wavePath.lineTo(x + waveLength * 0.4, midHeight + 10); // Deep trough (S)
+
+      // T wave (rounded bump)
+      wavePath.quadraticBezierTo(
+        x + waveLength * 0.5, midHeight + 20, // Up
+        x + waveLength * 0.6, midHeight, // Back to mid
+      );
+
+      // Flatline before next cycle
+      wavePath.lineTo(x + waveLength, midHeight);
+    }
+
+    canvas.drawPath(wavePath, wavePaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return true; // Repaint for animation
+  }
 }

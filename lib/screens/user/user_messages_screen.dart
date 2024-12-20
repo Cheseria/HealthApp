@@ -9,6 +9,7 @@ class UserMessagesScreen extends StatefulWidget {
 
 class _UserMessagesScreenState extends State<UserMessagesScreen> {
   final ChatServices _chatServices = ChatServices();
+  String searchQuery = ""; // Store the search query
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +52,11 @@ class _UserMessagesScreenState extends State<UserMessagesScreen> {
                     child: Padding(
                       padding: EdgeInsets.symmetric(horizontal: 15),
                       child: TextFormField(
+                        onChanged: (value) {
+                          setState(() {
+                            searchQuery = value; // Update the search query
+                          });
+                        },
                         decoration: InputDecoration(
                           hintText: "Search",
                           border: InputBorder.none,
@@ -88,13 +94,23 @@ class _UserMessagesScreenState extends State<UserMessagesScreen> {
                 return const Center(child: Text("No users found"));
               }
 
+              // Filter users based on the search query
+              final filteredUsers = snapshot.data!.where((user) {
+                final fullName = user["full_name"]?.toLowerCase() ?? "";
+                return fullName.contains(searchQuery.toLowerCase());
+              }).toList();
+
+              if (filteredUsers.isEmpty) {
+                return const Center(child: Text("No matching users found"));
+              }
+
               // Dynamically build the ListView based on Firestore data
               return ListView.builder(
                 physics: NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
-                itemCount: snapshot.data!.length,
+                itemCount: filteredUsers.length,
                 itemBuilder: (context, index) {
-                  final userData = snapshot.data![index];
+                  final userData = filteredUsers[index];
 
                   return ListTile(
                     onTap: () {

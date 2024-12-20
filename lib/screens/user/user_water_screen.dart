@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'dart:math';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:healthapp/screens/auth_screen.dart';
 
 class UserWaterScreen extends StatefulWidget {
@@ -19,50 +17,17 @@ class _UserWaterScreenState extends State<UserWaterScreen>
   ValueNotifier<double> waterLevel = ValueNotifier(1.0); // Start at 100%
 
   double dailyWaterIntake = 3000.0; // ml based on baseline
-  double baseWaterLossPerHour = 125.0; // ml per hour
-  double temperatureFactor = 1.0; // Base = 1.0
-  double humidityFactor = 1.0; // Base = 1.0
-  double stepRateFactor = 1.0; // Base = 1.0
-  double heartRateFactor = 1.0; // Base = 1.0
   bool lowWaterNotified = false;
-  late double weight = 70;
-  late double age = 30;
-
-  Future<void> getUserProfile() async {
-    try {
-      // Replace 'your_user_id' with the actual ID of the current user
-      final snapshot = await FirebaseFirestore.instance
-          .collection(
-              'users') // Assuming 'users' is the collection storing profiles
-          .doc(userId) // Document ID (user's unique ID)
-          .get();
-
-      final data = snapshot.data();
-
-      if (data != null) {
-        // Fetch weight and age from the profile
-        setState(() {
-          weight = data['weight'] ?? 70.0;
-          age = data['age'] ?? 30;
-
-          // Recalculate dailyWaterIntake based on the updated weight
-          dailyWaterIntake = weight * 35; // Example formula: 35 ml per kg
-        });
-      }
-    } catch (e) {
-      print("Error fetching user profile: $e");
-    }
-  }
+  late Timer _timer;
 
   @override
   void initState() {
     super.initState();
-    getUserProfile();
 
     // Initialize wave animation controller
     waveController =
         AnimationController(vsync: this, duration: Duration(seconds: 2));
-    waveAnimation = Tween<double>(begin: 0.0, end: 2 * pi)
+    waveAnimation = Tween<double>(begin: 0.0, end: 2 * 3.141592653589793)
         .animate(CurvedAnimation(parent: waveController, curve: Curves.linear))
       ..addListener(() {
         setState(() {});
@@ -70,25 +35,48 @@ class _UserWaterScreenState extends State<UserWaterScreen>
 
     waveController.repeat(); // Continuously animates the wave
 
-    // Timer for reducing water level every 15 minutes (2 seconds for testing)
-    Timer.periodic(Duration(seconds: 2), (timer) {
-      if (waterLevel.value > 0) {
-        setState(() {
-          double waterLoss = calculateWaterLoss() as double;
-          waterLevel.value =
-              (waterLevel.value - waterLoss / dailyWaterIntake).clamp(0.0, 1.0);
+    // Fetch initial water level from SharedPreferences
+    _fetchInitialWaterLevel();
 
-          // Check if water level falls below 60% for notification
-          if (waterLevel.value < 0.6 && !lowWaterNotified) {
-            notifyLowWaterLevel();
-            lowWaterNotified = true; // Prevent duplicate notifications
-          } else if (waterLevel.value >= 0.6) {
-            lowWaterNotified =
-                false; // Reset notification flag if level goes back up
-          }
-        });
+    // Timer to periodically fetch water level from SharedPreferences
+    _timer = Timer.periodic(Duration(seconds: 10), (timer) async {
+      try {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.reload(); // Ensure fresh data is fetched from disk
+        double currentLevel = prefs.getDouble('currentWaterLevel') ?? 1.0;
+
+        print("Fetched water level after reload: $currentLevel");
+
+        if (currentLevel != waterLevel.value) {
+          setState(() {
+            waterLevel.value = currentLevel;
+
+            // Check if water level falls below 60% for notification
+            if (waterLevel.value < 0.6 && !lowWaterNotified) {
+              notifyLowWaterLevel();
+              lowWaterNotified = true;
+            } else if (waterLevel.value >= 0.6) {
+              lowWaterNotified = false;
+            }
+          });
+        }
+      } catch (e) {
+        print("Error during periodic fetch: $e");
       }
     });
+  }
+
+  void _fetchInitialWaterLevel() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      double initialLevel = prefs.getDouble('currentWaterLevel') ?? 1.0;
+      setState(() {
+        waterLevel.value = initialLevel;
+      });
+      print("Initial water level fetched: $initialLevel");
+    } catch (e) {
+      print("Error fetching initial water level: $e");
+    }
   }
 
   // Function to trigger a low water level notification
@@ -98,64 +86,23 @@ class _UserWaterScreenState extends State<UserWaterScreen>
   }
 
   // Function to refill water level by 250ml
-  void refillCup() {
+  void refillCup() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    double currentLevel = prefs.getDouble('currentWaterLevel') ?? 1.0;
+    double refillAmount =
+        250.0 / dailyWaterIntake; // Calculate percentage of a cup refill
+
+    currentLevel = (currentLevel + refillAmount).clamp(0.0, 1.0); // Cap at 100%
+    await prefs.setDouble('currentWaterLevel', currentLevel);
+
     setState(() {
-      double refillAmount =
-          250.0 / dailyWaterIntake; // Calculate percentage of a cup refill
-      waterLevel.value =
-          (waterLevel.value + refillAmount).clamp(0.0, 1.0); // Cap at 100%
+      waterLevel.value = currentLevel;
     });
-  }
-
-  // Function to calculate the age factor
-  double calculateAgeFactor(double age) {
-    // Formula for age factor:
-    // Age Factor = 1 + (age - 30) * 0.005 if age > 30, otherwise 1
-    if (age > 30) {
-      return 1 + ((age - 30) * 0.005);
-    } else {
-      return 1.0; // Neutral factor for age <= 30
-    }
-  }
-
-  // Firebase references
-  final FirebaseFirestore firestore = FirebaseFirestore.instance;
-  String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-
-  // Function to calculate water loss based on factors
-  double calculateWaterLoss() {
-    double ageFactor = calculateAgeFactor(age);
-
-    // Adjusted for a 15-minute period from hourly rate
-    double adjustedBaseLoss = baseWaterLossPerHour / 4;
-
-    // Calculate temperature factor (e.g., 1.05 per degree above 28°C)
-    double temperature = 30.0; // Sample temperature in °C
-    temperatureFactor = 1 + max(0, (temperature - 28) * 0.05);
-
-    // Calculate humidity factor (e.g., increase by 1.1 if > 80% humidity)
-    double humidity = 85.0; // Sample humidity in %
-    humidityFactor = humidity > 80 ? 1.1 : 1.0;
-
-    // Calculate step rate factor (e.g., increase by 1.02 for moderate steps)
-    int currentSteps = 300; // Sample step count over 15 minutes
-    stepRateFactor = currentSteps > 100 ? 1.02 : 1.0;
-
-    // Calculate heart rate factor (e.g., increase by 1.03 if above 100 bpm)
-    int currentHeartRate = 85; // Sample heart rate in bpm
-    heartRateFactor = currentHeartRate > 100 ? 1.03 : 1.0;
-
-    // Total water loss considering environmental and activity factors
-    return adjustedBaseLoss *
-        temperatureFactor *
-        humidityFactor *
-        stepRateFactor *
-        heartRateFactor *
-        ageFactor;
   }
 
   @override
   void dispose() {
+    _timer.cancel(); // Cancel the periodic timer
     waveController.dispose();
     super.dispose();
   }
@@ -240,10 +187,6 @@ class _UserWaterScreenState extends State<UserWaterScreen>
                     "Current Level: ${(waterLevel.value * dailyWaterIntake).toStringAsFixed(0)} ml",
                     style: TextStyle(color: Colors.white),
                   ),
-                  Text(
-                    "Water Loss Rate: ${(calculateWaterLoss() * 4).toStringAsFixed(1)} ml/hr",
-                    style: TextStyle(color: Colors.white),
-                  ),
                 ],
               ),
             ),
@@ -275,7 +218,9 @@ class WavePainter extends CustomPainter {
     for (double i = 0; i <= size.width; i++) {
       path.lineTo(
         i,
-        baseHeight + waveHeight * sin((i / size.width * 2 * pi) + wavePhase),
+        baseHeight +
+            waveHeight *
+                sin((i / size.width * 2 * 3.141592653589793) + wavePhase),
       );
     }
 
