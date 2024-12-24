@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:healthapp/screens/doctor/doctor_message_sreen.dart';
 import 'package:healthapp/screens/doctor/doctor_profile_screen.dart';
 import 'package:healthapp/screens/doctor/doctor_schedule_screen.dart';
 
@@ -20,7 +21,7 @@ class _DoctorNavbarRootsState extends State<DoctorNavbarRoots> {
   Widget build(BuildContext context) {
     final screens = [
       const DoctorScheduleScreen(),
-      Container(),
+      DoctorMessagesScreen(),
       DoctorProfileScreen(userData: widget.userData),
     ];
 

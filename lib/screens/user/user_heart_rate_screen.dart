@@ -1,5 +1,4 @@
 import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:heart_bpm/chart.dart';
 import 'package:heart_bpm/heart_bpm.dart';
@@ -502,66 +501,155 @@ class _UserHeartRateScreenState extends State<UserHeartRateScreen> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          isBPMEnabled
-              ? dialog = HeartBPMDialog(
-                  context: context,
-                  showTextValues: true,
-                  borderRadius: 10,
-                  onRawData: (value) {
-                    setState(() {
-                      if (data.length >= 100) data.removeAt(0);
-                      data.add(value);
-                    });
-                  },
-                  onBPM: (value) => setState(() {
-                    if (bpmValues.length >= 100) bpmValues.removeAt(0);
-                    bpmValues.add(SensorValue(
-                        value: value.toDouble(), time: DateTime.now()));
-                  }),
-                )
-              : SizedBox(),
-          isBPMEnabled && data.isNotEmpty
-              ? Container(
-                  decoration: BoxDecoration(border: Border.all()),
-                  height: 180,
-                  child: BPMChart(data),
-                )
-              : SizedBox(),
-          isBPMEnabled && bpmValues.isNotEmpty
-              ? Container(
-                  decoration: BoxDecoration(border: Border.all()),
-                  constraints: BoxConstraints.expand(height: 180),
-                  child: BPMChart(bpmValues),
-                )
-              : SizedBox(),
-          SizedBox(height: 20),
-          // Countdown timer display
-          isBPMEnabled
-              ? Text("Time remaining: $countdown seconds",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))
-              : SizedBox(),
-          Padding(
-            padding: EdgeInsets.only(top: 20),
-            child: ElevatedButton.icon(
-              icon: Icon(Icons.favorite_rounded),
-              label: Text(isBPMEnabled ? "Stop measurement" : "Measure BPM"),
-              onPressed: () {
-                if (isBPMEnabled) {
-                  _stopMeasurement();
-                } else {
-                  _startMeasurement();
-                }
-              },
-            ),
+          ElevatedButton.icon(
+            icon: Icon(Icons.favorite_rounded),
+            label: Text("Measure BPM"),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return StatefulBuilder(
+                    builder: (context, setState) {
+                      return Dialog(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: SingleChildScrollView(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Heart Rate Measurement',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+                                Text(
+                                  'Put your finger between the camera and the flashlight.',
+                                  style: TextStyle(
+                                      fontSize: 16, color: Colors.grey[700]),
+                                  textAlign: TextAlign.center,
+                                ),
+                                SizedBox(height: 20),
+                                // Display Camera for HeartBPMDialog
+                                isBPMEnabled
+                                    ? HeartBPMDialog(
+                                        context: context,
+                                        showTextValues: true,
+                                        borderRadius: 10,
+                                        onRawData: (value) {
+                                          setState(() {
+                                            if (data.length >= 100)
+                                              data.removeAt(0);
+                                            data.add(value);
+                                          });
+                                        },
+                                        onBPM: (value) => setState(() {
+                                          if (bpmValues.length >= 100)
+                                            bpmValues.removeAt(0);
+                                          bpmValues.add(SensorValue(
+                                              value: value.toDouble(),
+                                              time: DateTime.now()));
+                                        }),
+                                      )
+                                    : SizedBox(),
+                                SizedBox(height: 20),
+                                // Display Countdown Timer
+                                isBPMEnabled
+                                    ? Text(
+                                        "Time remaining: $countdown seconds",
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      )
+                                    : SizedBox(),
+                                SizedBox(height: 20),
+                                // Description and Graph for Raw Data
+                                if (isBPMEnabled && data.isNotEmpty) ...[
+                                  Text(
+                                    'Raw Sensor Data',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.grey[700],
+                                    ),
+                                  ),
+                                  SizedBox(height: 10),
+                                  Container(
+                                    decoration:
+                                        BoxDecoration(border: Border.all()),
+                                    height: 180,
+                                    child: BPMChart(data),
+                                  ),
+                                ],
+                                SizedBox(height: 20),
+                                // Description and Graph for BPM Values
+                                if (isBPMEnabled && bpmValues.isNotEmpty) ...[
+                                  Text(
+                                    'BPM (Heart Rate) Values',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.grey[700],
+                                    ),
+                                  ),
+                                  SizedBox(height: 10),
+                                  Container(
+                                    decoration:
+                                        BoxDecoration(border: Border.all()),
+                                    height: 180,
+                                    child: BPMChart(bpmValues),
+                                  ),
+                                ],
+                                SizedBox(height: 20),
+                                // Display Average BPM
+                                if (!isBPMEnabled && bpm > 0)
+                                  Text(
+                                    "Average BPM: $bpm bpm",
+                                    style: TextStyle(fontSize: 18),
+                                  ),
+                                SizedBox(height: 20),
+                                // Start/Stop Button
+                                ElevatedButton.icon(
+                                  icon: Icon(Icons.favorite),
+                                  label: Text(
+                                    isBPMEnabled
+                                        ? "Stop measurement"
+                                        : "Start measurement",
+                                  ),
+                                  onPressed: () {
+                                    if (isBPMEnabled) {
+                                      _stopMeasurement();
+                                    } else {
+                                      _startMeasurement();
+                                    }
+                                    setState(() {}); // Update dialog state
+                                  },
+                                ),
+                                SizedBox(height: 10),
+                                // Close Button
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: Text("Close"),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
+            },
           ),
           SizedBox(height: 20),
-          // Display the average BPM after measurement ends
-          !isBPMEnabled && bpm > 0
-              ? Text("Average BPM: $bpm bpm", style: TextStyle(fontSize: 20))
-              : SizedBox(),
-
-          SizedBox(height: 20),
-          // Switcher for daily/weekly averages
+          // Daily/Weekly Averages
           Center(
             child: Container(
               padding: EdgeInsets.all(5),
@@ -628,7 +716,6 @@ class _UserHeartRateScreenState extends State<UserHeartRateScreen> {
             ),
           ),
           SizedBox(height: 20),
-          // Display the selected average view based on buttonIndex
           Center(
             child: buttonIndex == 0 ? dayView() : weekView(),
           ),

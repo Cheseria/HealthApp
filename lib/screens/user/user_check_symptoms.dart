@@ -26,6 +26,7 @@ class UserCheckSymptomsState extends State<UserCheckSymptoms> {
   String? selectedCategory; // Track the currently selected category
   List<String> selectedSymptoms = []; // Track selected symptoms
   late Interpreter _interpreter;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -46,6 +47,7 @@ class UserCheckSymptomsState extends State<UserCheckSymptoms> {
   @override
   void dispose() {
     _interpreter.close(); // Dispose model when not needed to free resources
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -60,6 +62,15 @@ class UserCheckSymptomsState extends State<UserCheckSymptoms> {
       } else {
         handleSymptomSelection(option);
       }
+    });
+
+    // Scroll to the bottom after updating the messages
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
     });
   }
 
@@ -239,7 +250,7 @@ class UserCheckSymptomsState extends State<UserCheckSymptoms> {
           'v:project': 'medlineplus',
           'v:sources': 'medlineplus-bundle',
           'query': encodedDiseaseName.replaceAll(
-              '+', '%20'), // Ensure spaces are encoded as '%20'
+              '+', ' '), // Ensure spaces are encoded as '%20'
         },
       ).toString();
     }
@@ -335,6 +346,7 @@ class UserCheckSymptomsState extends State<UserCheckSymptoms> {
         children: [
           Expanded(
             child: ListView.builder(
+              controller: _scrollController, // Attach the ScrollController
               itemCount: messages.length,
               itemBuilder: (context, index) {
                 final message = messages[index];

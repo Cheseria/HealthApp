@@ -2,7 +2,7 @@ import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:healthapp/screens/settings_screen.dart';
+import 'package:healthapp/screens/user/settings_screen.dart';
 import 'package:healthapp/screens/user/user_check_symptoms.dart';
 import 'package:healthapp/screens/user/user_heart_rate_screen.dart';
 import 'package:healthapp/screens/user/user_sleep_screen.dart';
@@ -705,19 +705,37 @@ class HeartRateBackgroundPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Background gradient
-    final Rect rect = Rect.fromLTWH(0, 0, size.width, size.height);
-    final Gradient gradient = LinearGradient(
-      colors: [Color(0xFFFF4D4D), Color(0xFFFF8080)], // Dark red to light red
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    );
-    final Paint backgroundPaint = Paint()..shader = gradient.createShader(rect);
-    canvas.drawRect(rect, backgroundPaint);
+    // Background color (Black)
+    final Paint backgroundPaint = Paint()..color = Colors.black;
+    canvas.drawRect(
+        Rect.fromLTWH(0, 0, size.width, size.height), backgroundPaint);
+
+    // Neon grid
+    final Paint gridPaint = Paint()
+      ..color = Colors.green.withOpacity(0.2) // Neon green grid lines
+      ..strokeWidth = 1
+      ..style = PaintingStyle.stroke;
+
+    // Draw the grid
+    double gridSize = 20; // Size of grid squares
+    for (double x = 0; x <= size.width; x += gridSize) {
+      canvas.drawLine(
+          Offset(x, 0), Offset(x, size.height), gridPaint); // Vertical lines
+    }
+    for (double y = 0; y <= size.height; y += gridSize) {
+      canvas.drawLine(
+          Offset(0, y), Offset(size.width, y), gridPaint); // Horizontal lines
+    }
+
+    // Glow effect for the ECG wave
+    final Paint glowPaint = Paint()
+      ..color = Colors.green.withOpacity(0.2) // Neon green glow
+      ..strokeWidth = 6 // Larger width for glow
+      ..style = PaintingStyle.stroke;
 
     // ECG wave
     final Paint wavePaint = Paint()
-      ..color = Colors.white
+      ..color = Colors.greenAccent // Neon green line
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
 
@@ -750,6 +768,10 @@ class HeartRateBackgroundPainter extends CustomPainter {
       wavePath.lineTo(x + waveLength, midHeight);
     }
 
+    // Draw the glow behind the ECG line
+    canvas.drawPath(wavePath, glowPaint);
+
+    // Draw the main ECG line
     canvas.drawPath(wavePath, wavePaint);
   }
 

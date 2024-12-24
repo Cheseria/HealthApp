@@ -2,7 +2,9 @@ import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:healthapp/main.dart';
+import 'package:healthapp/services/external_data_service.dart';
 import 'package:pedometer/pedometer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
@@ -13,23 +15,69 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 class BackgroundTasks {
   static StreamSubscription<StepCount>? _stepCountSubscription;
 
-  /// Calculates water loss based on environmental and user factors
-  static Future<void> calculateAndUpdateWaterLoss() async {
+  static Future<void> updateWaterLoss() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      double latitude = prefs.getDouble('latitude') ?? 0.0;
+      double longitude = prefs.getDouble('longitude') ?? 0.0;
+
+      // Fetch weather data using the stored location
+      Map<String, double> weatherData =
+          await ExternalDataService.fetchWeatherData(latitude, longitude);
+      print('Temperature: ${weatherData['temperature']}°C');
+      print('Humidity: ${weatherData['humidity']}%');
+
+      // Fetch other user data
+      Map<String, int> userActivityData =
+          await ExternalDataService.fetchUserActivityData();
+
+      print('heartrate: ${userActivityData['heartrate']}');
+      print('steps: ${userActivityData['steps']}');
+      int userAge = await ExternalDataService.fetchUserAge();
+
+      // Calculate and update water loss
+      await calculateAndUpdateWaterLoss(
+        temperature: weatherData['temperature']!,
+        humidity: weatherData['humidity']!,
+        stepsIn15Mins: userActivityData['stepsIn15Mins']!,
+        heartRate: userActivityData['heartRate']!,
+        age: userAge,
+      );
+    } catch (e) {
+      print("Error updating water loss: $e");
+    }
+  }
+
+  /// Static method to calculate water loss
+  static Future<void> calculateAndUpdateWaterLoss({
+    required double temperature,
+    required double humidity,
+    required int stepsIn15Mins,
+    required int heartRate,
+    required int age,
+  }) async {
     try {
       // Fetch the required data from SharedPreferences
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      double dailyWaterIntake =
-          prefs.getDouble('dailyWaterIntake') ?? 3000.0; // ml
+      double dailyWaterIntake = prefs.getDouble('dailyWaterIntake') ??
+          3000.0; // Default daily intake in ml
+      await prefs.reload();
       double currentWaterLevel = prefs.getDouble('currentWaterLevel') ??
-          1.0; // Percentage (1.0 = 100%)
+          1.0; // Default percentage (1.0 = 100%)
 
-      // Mock environmental and user activity data
+      // Base water loss factors
       double baseWaterLossPerHour = 125.0; // ml
-      double temperatureFactor = 1.05; // Example for 30°C
-      double humidityFactor = 1.1; // Example for 85% humidity
-      double stepRateFactor = 1.02; // Example for 300 steps in 15 mins
-      double heartRateFactor = 1.0; // Default for normal heart rate
-      double ageFactor = 1.0; // Neutral factor for age <= 30
+      double temperatureFactor =
+          1 + (temperature - 30) * 0.01; // Adjust factor for temperature
+      double humidityFactor =
+          1 + (humidity - 50) * 0.005; // Adjust factor for humidity
+      double stepRateFactor =
+          1 + (stepsIn15Mins / 300) * 0.02; // Adjust factor for steps
+      double heartRateFactor =
+          1 + ((heartRate - 70) / 100); // Adjust factor for heart rate
+      double ageFactor = age > 30
+          ? 1 + ((age - 30) * 0.005)
+          : 1.0; // Adjust factor for age over 30
 
       // Adjust water loss for a 15-minute interval
       double adjustedWaterLoss = (baseWaterLossPerHour / 4) *
@@ -39,7 +87,7 @@ class BackgroundTasks {
           heartRateFactor *
           ageFactor;
 
-      // Update water level
+      // Update the current water level
       currentWaterLevel =
           (currentWaterLevel - adjustedWaterLoss / dailyWaterIntake)
               .clamp(0.0, 1.0);
@@ -52,10 +100,26 @@ class BackgroundTasks {
       // Trigger notification if water level falls below 60%
       if (currentWaterLevel < 0.6) {
         _notifyLowWaterLevel();
-        print("Notification sent!");
+        print("Notification sent: Water level below 60%");
       }
     } catch (e) {
       print("Error calculating water loss: $e");
+    }
+  }
+
+  static Future<void> updateLocationInBackground() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setDouble('latitude', position.latitude);
+      await prefs.setDouble('longitude', position.longitude);
+
+      print(
+          "Background location updated: Latitude: ${position.latitude}, Longitude: ${position.longitude}");
+    } catch (e) {
+      print("Error updating location in background: $e");
     }
   }
 

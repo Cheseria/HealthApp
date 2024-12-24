@@ -302,6 +302,7 @@ class _UserSleepScreenState extends State<UserSleepScreen>
           ],
         ),
       ),
+      backgroundColor: Colors.white,
       body: TabBarView(
         controller: _tabController,
         children: [

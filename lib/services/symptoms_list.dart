@@ -27,7 +27,7 @@ final List<Symptom> symptoms = [
     'Restlessness',
     'Ache All Over',
   ]),
-  Symptom('Respiratory Symptoms', [
+  Symptom('Breathing Issues', [
     'Shortness Of Breath',
     'Sharp Chest Pain',
     'Chest Tightness',
@@ -45,7 +45,7 @@ final List<Symptom> symptoms = [
     'Abnormal Breathing Sounds',
     'Difficulty Breathing',
   ]),
-  Symptom('Cardiovascular Symptoms', [
+  Symptom('Heart & Blood', [
     'Palpitations',
     'Irregular Heartbeat',
     'Increased Heart Rate',
@@ -57,7 +57,7 @@ final List<Symptom> symptoms = [
     'Chest Discomfort',
     'Rib Pain',
   ]),
-  Symptom('Digestive Symptoms', [
+  Symptom('Stomach & Digestion', [
     'Abdominal Pain',
     'Sharp Abdominal Pain',
     'Burning Abdominal Pain',
@@ -74,7 +74,7 @@ final List<Symptom> symptoms = [
     'Swollen Abdomen',
     'Abdominal Distention',
   ]),
-  Symptom('Neurological Symptoms', [
+  Symptom('Brain & Nerves', [
     'Dizziness',
     'Insomnia',
     'Seizures',
@@ -89,7 +89,7 @@ final List<Symptom> symptoms = [
     'Side Pain',
     'Restlessness',
   ]),
-  Symptom('Musculoskeletal Symptoms', [
+  Symptom('Bones & Muscles', [
     'Leg Pain',
     'Back Pain',
     'Neck Pain',
@@ -162,21 +162,23 @@ final List<Symptom> symptoms = [
     'Swollen Eye',
     'Mass On Eyelid',
   ]),
-  Symptom('Other Symptoms', [
+  Symptom('Mental Health Symptoms', [
     'Anxiety And Nervousness',
     'Depression',
     'Emotional Symptoms',
+    'Excessive Anger',
+    'Hostile Behavior',
+    'Hysterical Behavior',
+  ]),
+  Symptom('Other Symptoms', [
     'Drug Abuse',
     'Alcohol Abuse',
     'Feeling Hot',
     'Feeling Cold',
-    'Excessive Anger',
-    'Hostile Behavior',
     'Night Sweats',
     'Cold Hands And Feet',
     'Sleepiness',
     'Excessive Appetite',
     'Decreased Appetite',
-    'Hysterical Behavior',
   ]),
 ];

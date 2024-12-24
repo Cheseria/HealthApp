@@ -1,12 +1,14 @@
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_background/flutter_background.dart';
 import 'firebase_options.dart';
 import 'package:healthapp/screens/auth_screen.dart';
 import 'package:healthapp/services/background_tasks.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -15,6 +17,10 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await AndroidAlarmManager.initialize();
+  await ensureLocationPermissions();
+
+  // Fetch and store the user's location
+  await fetchAndStoreLocation();
 
   // Initialize notifications
   const AndroidInitializationSettings initializationSettingsAndroid =
@@ -31,15 +37,15 @@ Future<void> main() async {
 
   runApp(const MyApp());
 
+  // Schedule background tasks
   await AndroidAlarmManager.periodic(
-    const Duration(minutes: 15), // Run every 15 minutes
+    const Duration(minutes: 15), // Adjust to 15 minutes in production
     2, // Unique ID for water loss task
-    BackgroundTasks.calculateAndUpdateWaterLoss,
+    BackgroundTasks.updateWaterLoss,
     wakeup: true, // Wake up the device if necessary
     exact: true, // Use exact timing
   );
 
-  // Schedule the background task every 15 minutes
   await AndroidAlarmManager.periodic(
     const Duration(minutes: 1),
     1, // Unique ID for the task
@@ -58,6 +64,31 @@ Future<void> main() async {
     exact: true,
     wakeup: true,
   );
+
+  await AndroidAlarmManager.periodic(
+    const Duration(minutes: 10),
+    3, // Unique ID for location update task
+    BackgroundTasks.updateLocationInBackground,
+    wakeup: true,
+    exact: true,
+  );
+}
+
+/// Fetch and store the user's current location in SharedPreferences
+Future<void> fetchAndStoreLocation() async {
+  try {
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('latitude', position.latitude);
+    await prefs.setDouble('longitude', position.longitude);
+
+    print(
+        "Location stored: Latitude: ${position.latitude}, Longitude: ${position.longitude}");
+  } catch (e) {
+    print("Error fetching location: $e");
+  }
 }
 
 /// Initialize background tasks and request necessary permissions
@@ -87,6 +118,25 @@ Future<void> initializeBackgroundTasks() async {
   // Initialize pedometer stream
   print("Calling initializePedometerStream...");
   BackgroundTasks.initializePedometerStream();
+}
+
+Future<void> ensureLocationPermissions() async {
+  bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  if (!serviceEnabled) {
+    throw Exception("Location services are disabled.");
+  }
+
+  LocationPermission permission = await Geolocator.checkPermission();
+  if (permission == LocationPermission.denied) {
+    permission = await Geolocator.requestPermission();
+    if (permission == LocationPermission.denied) {
+      throw Exception("Location permissions are denied.");
+    }
+  }
+
+  if (permission == LocationPermission.deniedForever) {
+    throw Exception("Location permissions are permanently denied.");
+  }
 }
 
 /// Request necessary permissions for background execution

@@ -73,19 +73,35 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  //send message
   void sendMessage() async {
-    //if there is nothing inside the textfield
-    if (_messageController.text.isNotEmpty) {
-      //send the message
-      await _chatServices.sendMessage(
-          widget.receiverID, _messageController.text);
-
-      //clear the controller
-      _messageController.clear();
+    // Check if the text field is empty
+    if (_messageController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Message cannot be empty!")),
+      );
+      return;
     }
 
-    scrollDown();
+    try {
+      // Send the message
+      await _chatServices.sendMessage(
+        widget.receiverID,
+        "doctor", // Pass the receiver role dynamically if needed
+        _messageController.text,
+        widget.receiverName, // Pass receiver's name
+      );
+
+      // Clear the text field
+      _messageController.clear();
+
+      // Scroll to the bottom
+      scrollDown();
+    } catch (error) {
+      // Handle errors gracefully
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to send message: $error")),
+      );
+    }
   }
 
   @override
