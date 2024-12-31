@@ -78,7 +78,11 @@ class _UserSleepScreenState extends State<UserSleepScreen>
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             return AlertDialog(
-              title: Text('Input Sleep Data'),
+              backgroundColor: Colors.white,
+              title: Text(
+                'Input Sleep Data',
+                style: TextStyle(color: Color(0xFF238878)),
+              ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -108,6 +112,30 @@ class _UserSleepScreenState extends State<UserSleepScreen>
                       TimeOfDay? time = await showTimePicker(
                         context: context,
                         initialTime: TimeOfDay.fromDateTime(selectedSleepTime),
+                        builder: (BuildContext context, Widget? child) {
+                          return Theme(
+                            data: Theme.of(context).copyWith(
+                              dialogBackgroundColor:
+                                  Colors.white, // Set background color to white
+                              timePickerTheme: TimePickerThemeData(
+                                backgroundColor: Colors
+                                    .white, // Background color for the picker
+                                hourMinuteColor: MaterialStateColor.resolveWith(
+                                    (states) => states
+                                            .contains(MaterialState.selected)
+                                        ? Color(
+                                            0xFF238878) // Selected time background
+                                        : Colors.grey[
+                                            200]!), // Default time background
+                                dialBackgroundColor:
+                                    Colors.white, // Dial background color
+                                entryModeIconColor:
+                                    Color(0xFF238878), // Entry mode toggle icon
+                              ),
+                            ),
+                            child: child!,
+                          );
+                        },
                       );
                       if (time != null) {
                         setState(() {
@@ -121,7 +149,15 @@ class _UserSleepScreenState extends State<UserSleepScreen>
                         });
                       }
                     },
-                    child: Text(DateFormat('HH:mm').format(selectedSleepTime)),
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Color(0xFF238878),
+                      backgroundColor:
+                          Color(0xFFF5F5F5), // Text and ripple color
+                    ),
+                    child: Text(
+                      DateFormat('HH:mm').format(selectedSleepTime),
+                      style: TextStyle(color: Color(0xFF238878)),
+                    ),
                   ),
                   SizedBox(height: 20),
 
@@ -151,6 +187,30 @@ class _UserSleepScreenState extends State<UserSleepScreen>
                       TimeOfDay? time = await showTimePicker(
                         context: context,
                         initialTime: TimeOfDay.fromDateTime(selectedWakeTime),
+                        builder: (BuildContext context, Widget? child) {
+                          return Theme(
+                            data: Theme.of(context).copyWith(
+                              dialogBackgroundColor:
+                                  Colors.white, // Set background color to white
+                              timePickerTheme: TimePickerThemeData(
+                                backgroundColor: Colors
+                                    .white, // Background color for the picker
+                                hourMinuteColor: MaterialStateColor.resolveWith(
+                                    (states) => states
+                                            .contains(MaterialState.selected)
+                                        ? Color(
+                                            0xFF238878) // Selected time background
+                                        : Colors.grey[
+                                            200]!), // Default time background
+                                dialBackgroundColor:
+                                    Colors.white, // Dial background color
+                                entryModeIconColor:
+                                    Color(0xFF238878), // Entry mode toggle icon
+                              ),
+                            ),
+                            child: child!,
+                          );
+                        },
                       );
                       if (time != null) {
                         setState(() {
@@ -164,7 +224,15 @@ class _UserSleepScreenState extends State<UserSleepScreen>
                         });
                       }
                     },
-                    child: Text(DateFormat('HH:mm').format(selectedWakeTime)),
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Color(0xFF238878),
+                      backgroundColor:
+                          Color(0xFFF5F5F5), // Text and ripple color
+                    ),
+                    child: Text(
+                      DateFormat('HH:mm').format(selectedWakeTime),
+                      style: TextStyle(color: Color(0xFF238878)), // Text color
+                    ),
                   ),
                 ],
               ),
@@ -293,8 +361,13 @@ class _UserSleepScreenState extends State<UserSleepScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Last Night's Sleep"),
+        backgroundColor: Color(0xFF238878),
+        title: Text(
+          "Last Night's Sleep",
+          style: TextStyle(color: Colors.white),
+        ),
         bottom: TabBar(
+          labelColor: Colors.white,
           controller: _tabController,
           tabs: [
             Tab(text: 'Day'),
@@ -626,6 +699,7 @@ class _UserSleepScreenState extends State<UserSleepScreen>
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       child: Card(
+        color: Color(0xFFF5F5F5),
         elevation: 2,
         child: ListTile(
           leading: Icon(icon),

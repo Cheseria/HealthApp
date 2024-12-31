@@ -108,11 +108,24 @@ class UserCheckSymptomsState extends State<UserCheckSymptoms> {
   }
 
   void handleCompletion() {
-    messages.add(SymptomMessage(
-      text: "Thank you for sharing your symptoms!",
-      isUser: false,
-    ));
-    diagnoseSymptoms();
+    if (selectedSymptoms.isEmpty) {
+      messages.add(SymptomMessage(
+        text: "Thank you for sharing your symptoms! No symptoms were selected.",
+        isUser: false,
+      ));
+    } else {
+      // Generate a new-line-separated list of selected symptoms
+      String symptomsList =
+          selectedSymptoms.map((symptom) => "- $symptom").join("\n");
+
+      messages.add(SymptomMessage(
+        text:
+            "Thank you for sharing your symptoms! Here are the symptoms you selected:\n$symptomsList",
+        isUser: false,
+      ));
+    }
+
+    diagnoseSymptoms(); // Proceed with diagnosis
   }
 
   void handleSymptomSelection(String option) {
@@ -340,7 +353,11 @@ class UserCheckSymptomsState extends State<UserCheckSymptoms> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Symptom Checker"),
+        backgroundColor: Color(0xFF238878),
+        title: Text(
+          "Symptom Checker",
+          style: TextStyle(color: Colors.white),
+        ),
       ),
       body: Column(
         children: [
@@ -358,8 +375,9 @@ class UserCheckSymptomsState extends State<UserCheckSymptoms> {
                     margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                     padding: EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color:
-                          message.isUser ? Colors.blue[100] : Colors.grey[200],
+                      color: message.isUser
+                          ? Color(0xFFF5F5F5)
+                          : Color(0xFFF5F5F5),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Column(

@@ -21,7 +21,7 @@ class _DoctorMessagesScreenState extends State<DoctorMessagesScreen> {
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
             child: Text(
-              "Chatrooms",
+              "Messages",
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,

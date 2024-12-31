@@ -85,6 +85,10 @@ flutter:
   - assets/tflite/disease_labels.csv
   - assets/tflite/icd10_mapping.json
   - assets/placeholder.jpeg
+  - assets/tflite/tips_model.tflite
+  - assets/tflite/tips_label_encoders.json
+  - assets/tflite/scaler_params.json
+
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

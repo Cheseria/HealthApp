@@ -74,7 +74,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         child: Column(
           children: [
             SizedBox(
-              height: 250,
+              height: 200,
               child: CupertinoPicker(
                 scrollController: FixedExtentScrollController(
                     initialItem: currentValue - min),

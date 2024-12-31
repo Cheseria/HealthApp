@@ -284,7 +284,7 @@ class _UserBookingScreenState extends State<UserBookingScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.grey[300], // Set button to light grey
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 100, vertical: 20),
+                    const EdgeInsets.symmetric(horizontal: 90, vertical: 20),
                 textStyle: const TextStyle(
                   fontSize: 20,
                   color: Color(0xFF238878), // Set button text color

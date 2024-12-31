@@ -482,6 +482,7 @@ class _UserHeartRateScreenState extends State<UserHeartRateScreen> {
 // Card for displaying heart rate data
   Widget heartRateDataCard(IconData icon, String label, String value) {
     return Card(
+      color: Color(0xFFF5F5F5),
       child: ListTile(
         leading: Icon(icon),
         title: Text(label),
@@ -493,17 +494,26 @@ class _UserHeartRateScreenState extends State<UserHeartRateScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: Text('Heart BPM Demo'),
+        backgroundColor: Color(0xFF238878),
+        title: Text(
+          'Heart Rate Monitor',
+          style: TextStyle(color: Colors.white),
+        ),
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           ElevatedButton.icon(
-            icon: Icon(Icons.favorite_rounded),
-            label: Text("Measure BPM"),
+            icon: Icon(
+              Icons.favorite_rounded,
+              color: Color(0xFF238878),
+            ),
+            label: Text(
+              "Measure BPM",
+              style: TextStyle(color: Color(0xFF238878)),
+            ),
             onPressed: () {
               showDialog(
                 context: context,
@@ -616,8 +626,12 @@ class _UserHeartRateScreenState extends State<UserHeartRateScreen> {
                                 SizedBox(height: 20),
                                 // Start/Stop Button
                                 ElevatedButton.icon(
-                                  icon: Icon(Icons.favorite),
+                                  icon: Icon(
+                                    Icons.favorite,
+                                    color: Color(0xFF238878),
+                                  ),
                                   label: Text(
+                                    style: TextStyle(color: Color(0xFF238878)),
                                     isBPMEnabled
                                         ? "Stop measurement"
                                         : "Start measurement",
@@ -655,7 +669,7 @@ class _UserHeartRateScreenState extends State<UserHeartRateScreen> {
               padding: EdgeInsets.all(5),
               margin: EdgeInsets.symmetric(horizontal: 10),
               decoration: BoxDecoration(
-                color: Color(0xfff4f6fa),
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Row(

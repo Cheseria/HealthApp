@@ -74,6 +74,10 @@ class _UserHomeScreenState extends State<UserHomeScreen>
   }
 
   final user = FirebaseAuth.instance.currentUser!;
+  late Map<String, String> predictions;
+  String currentTip = "";
+  List<String> allTips = [];
+  int currentIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -244,7 +248,7 @@ class _UserHomeScreenState extends State<UserHomeScreen>
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      "Heartrate",
+                                      "Heart Rate",
                                       style: TextStyle(
                                         fontSize: 20,
                                         color: Colors.white,
@@ -506,47 +510,6 @@ class _UserHomeScreenState extends State<UserHomeScreen>
               ),
             ],
           ),
-          Center(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-              child: InkWell(
-                onTap: () {},
-                child: Container(
-                  width: MediaQuery.of(context).size.width * 0.9,
-                  padding: EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Color(0xFFC3D3CC), width: 1),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 6,
-                        spreadRadius: 4,
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.symmetric(vertical: 15),
-                        child: Text(
-                          "Tips of The Day",
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 50),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -649,46 +612,42 @@ class StepsBackgroundPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Grass (Green top layer)
-    final Paint grassPaint = Paint()..color = Color(0xFF00AA00); // Green color
-    final Rect grassRect = Rect.fromLTWH(0, 0, size.width, size.height * 0.4);
-    canvas.drawRect(grassRect, grassPaint);
+    // Background
+    final Paint backgroundPaint = Paint()
+      ..color = Color(0xFF6A4F4B); // Light beige
+    final Rect backgroundRect = Rect.fromLTWH(0, 0, size.width, size.height);
+    canvas.drawRect(backgroundRect, backgroundPaint);
 
-    // Soil (Brown bottom layer)
-    final Paint soilPaint = Paint()..color = Color(0xFF8B4513); // Brown color
-    final Rect soilRect =
-        Rect.fromLTWH(0, size.height * 0.4, size.width, size.height * 0.6);
-    canvas.drawRect(soilRect, soilPaint);
-
-    // Add soil texture
-    final Paint soilTexturePaint = Paint()
-      ..color = Color(0xFF5C3317).withOpacity(0.3) // Darker brown for texture
+    // Footsteps pattern (Close diagonal footsteps)
+    final Paint footstepsPaint = Paint()
+      ..color = Color(0xFFF0EAD6) // Dark brown for footsteps
       ..style = PaintingStyle.fill;
 
-    for (double x = -animationValue % 10; x < size.width; x += 10) {
-      for (double y = size.height * 0.4; y < size.height; y += 10) {
-        canvas.drawCircle(
-            Offset(x + 5, y + 5), 3, soilTexturePaint); // Small soil dots
-      }
-    }
+    // Draw footsteps diagonally with close spacing
+    for (double i = -animationValue % 40;
+        i < size.width + size.height;
+        i += 40) {
+      double dx1 = i - animationValue * 0.5;
+      double dy1 = i * 0.5;
+      canvas.save();
+      canvas.translate(dx1, dy1);
+      canvas.rotate(0.5); // Rotate left foot slightly
+      canvas.drawOval(
+        Rect.fromCenter(center: Offset(0, 0), width: 20, height: 10),
+        footstepsPaint,
+      ); // Left foot
+      canvas.restore();
 
-    // Grass texture (Optional blades of grass)
-    final Paint grassBladePaint = Paint()
-      ..color = Color(0xFF007700) // Darker green for grass blades
-      ..strokeWidth = 2
-      ..strokeCap = StrokeCap.round;
-
-    for (double x = -animationValue % 15; x < size.width; x += 15) {
-      canvas.drawLine(
-        Offset(x, size.height * 0.35),
-        Offset(x + 5, size.height * 0.3), // Grass blades slant
-        grassBladePaint,
-      );
-      canvas.drawLine(
-        Offset(x + 7, size.height * 0.37),
-        Offset(x + 12, size.height * 0.32), // Grass blades slant
-        grassBladePaint,
-      );
+      double dx2 = dx1 + 20;
+      double dy2 = dy1 + 40;
+      canvas.save();
+      canvas.translate(dx2, dy2);
+      canvas.rotate(0.5); // Rotate right foot slightly
+      canvas.drawOval(
+        Rect.fromCenter(center: Offset(0, 0), width: 20, height: 10),
+        footstepsPaint,
+      ); // Right foot
+      canvas.restore();
     }
   }
 

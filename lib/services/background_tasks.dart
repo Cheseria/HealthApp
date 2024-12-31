@@ -48,7 +48,6 @@ class BackgroundTasks {
     }
   }
 
-  /// Static method to calculate water loss
   static Future<void> calculateAndUpdateWaterLoss({
     required double temperature,
     required double humidity,
@@ -123,7 +122,6 @@ class BackgroundTasks {
     }
   }
 
-  /// Sends a low water level notification
   static Future<void> _notifyLowWaterLevel() async {
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
@@ -176,10 +174,8 @@ class BackgroundTasks {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       int baseStepCount = prefs.getInt('baseStepCount') ?? 0;
 
-      // Use a completer to get the step count from the pedometer stream
       Completer<int> completer = Completer<int>();
 
-      // Set a timeout for the completer
       Future.delayed(Duration(seconds: 30), () {
         if (!completer.isCompleted) {
           completer.completeError("Pedometer stream timeout");
@@ -209,6 +205,7 @@ class BackgroundTasks {
     print("Resetting base step count...");
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.reload();
 
       // Fetch the latest total steps from SharedPreferences
       int latestTotalSteps = prefs.getInt('totalSteps') ?? 0;
@@ -282,7 +279,10 @@ class BackgroundTasks {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setInt('stepCount', steps);
+
+      int BaseStepCount = prefs.getInt('baseStepCount') ?? 0;
       print("Stored step count locally: $steps");
+      print("base step count: $BaseStepCount");
     } catch (e) {
       print("Error storing step count locally: $e");
     }

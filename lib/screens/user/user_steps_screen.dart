@@ -35,6 +35,8 @@ class _UserStepsScreenState extends State<UserStepsScreen>
   // Load stored step count from SharedPreferences
   Future<void> _loadStepCount() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.reload();
+
     setState(() {
       stepCount = prefs.getInt('stepCount') ?? 0;
     });
@@ -123,7 +125,7 @@ class _UserStepsScreenState extends State<UserStepsScreen>
           barRods: [
             BarChartRodData(
               toY: steps,
-              color: Colors.red,
+              color: Color(0xFF238878),
               width: 15,
               borderRadius: BorderRadius.zero,
             ),
@@ -152,6 +154,8 @@ class _UserStepsScreenState extends State<UserStepsScreen>
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Color(0xFF238878),
+        foregroundColor: Colors.white,
         title: Text('Step Count Bar Chart'),
       ),
       body: Column(children: [

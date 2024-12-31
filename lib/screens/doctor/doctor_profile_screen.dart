@@ -86,6 +86,7 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Color(0xFF238878),
         title: Text(
@@ -151,7 +152,10 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
                   ),
                   child: _isSaving
                       ? CircularProgressIndicator(color: Colors.white)
-                      : Text('Save Description'),
+                      : Text(
+                          'Save Description',
+                          style: TextStyle(color: Colors.white),
+                        ),
                 )
               else
                 ElevatedButton(
